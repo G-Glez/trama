@@ -1,0 +1,9 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "command": {
+    "task": {
+      "description": "Read task.md and execute the task",
+      "template": "Read the file task.md from the project root. Understand what needs to be done and execute it step by step. Follow the task skill for how to work with tasks in this project. Mark progress in task.md as you complete each step. When finished, summarize what was done and confirm all acceptance criteria are met."
+    }
+  }
+}
