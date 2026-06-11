@@ -17,7 +17,7 @@ const docTemplate = `{
     "paths": {
         "/hola": {
             "get": {
-                "description": "Returns a greeting",
+                "description": "Returns a greeting and stores an ID in SQLite",
                 "produces": [
                     "application/json"
                 ],
@@ -27,9 +27,7 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "additionalProperties": true
                         }
                     }
                 }

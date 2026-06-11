@@ -8,15 +8,14 @@ info:
 paths:
   /hola:
     get:
-      description: Returns a greeting
+      description: Returns a greeting and stores an ID in SQLite
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            additionalProperties:
-              type: string
+            additionalProperties: true
             type: object
       summary: Say hello
   /ping:
