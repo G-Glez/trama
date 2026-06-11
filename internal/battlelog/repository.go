@@ -19,7 +19,7 @@ type TournamentRepository interface {
 type PairingRepository interface {
 	Create(p *Pairing) error
 	GetByID(id PairingID) (*Pairing, error)
-	ListByRound(roundID string) ([]Pairing, error)
+	ListByRound(roundID RoundID) ([]Pairing, error)
 	Update(p *Pairing) error
 	Delete(id PairingID) error
 }

@@ -3,10 +3,14 @@ package battlelog
 import (
 	"time"
 
+	"github.com/google/uuid"
+
 	"trama/internal/core"
 )
 
-type PlayerID string
+type PlayerID struct {
+	uuid.UUID
+}
 
 type Player struct {
 	ID        PlayerID
@@ -15,7 +19,9 @@ type Player struct {
 	UpdatedAt time.Time
 }
 
-type TournamentID string
+type TournamentID struct {
+	uuid.UUID
+}
 type TournamentStatus string
 
 const (
@@ -36,14 +42,20 @@ type Tournament struct {
 
 type RoundNumber int
 
+type RoundID struct {
+	uuid.UUID
+}
+
 type Round struct {
-	ID           string
+	ID           RoundID
 	TournamentID TournamentID
 	Number       RoundNumber
 	CreatedAt    time.Time
 }
 
-type PairingID string
+type PairingID struct {
+	uuid.UUID
+}
 type PairingStatus string
 
 const (
@@ -54,14 +66,16 @@ const (
 
 type Pairing struct {
 	ID        PairingID
-	RoundID   string
+	RoundID   RoundID
 	Player1ID PlayerID
 	Player2ID PlayerID
 	Status    PairingStatus
 	CreatedAt time.Time
 }
 
-type BattleResultID string
+type BattleResultID struct {
+	uuid.UUID
+}
 
 type BattleResult struct {
 	ID        BattleResultID

@@ -1,8 +1,14 @@
 package core
 
-import "time"
+import (
+	"time"
 
-type GameSystemID string
+	"github.com/google/uuid"
+)
+
+type GameSystemID struct {
+	uuid.UUID
+}
 
 type GameSystem struct {
 	ID        GameSystemID
@@ -11,7 +17,9 @@ type GameSystem struct {
 	UpdatedAt time.Time
 }
 
-type EditionID string
+type EditionID struct {
+	uuid.UUID
+}
 
 type Edition struct {
 	ID           EditionID
@@ -22,7 +30,9 @@ type Edition struct {
 	UpdatedAt    time.Time
 }
 
-type FactionID string
+type FactionID struct {
+	uuid.UUID
+}
 
 type Faction struct {
 	ID        FactionID
