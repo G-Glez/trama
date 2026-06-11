@@ -5,8 +5,8 @@ import (
 )
 
 type Config struct {
-	Port        string
-	GinMode     string
+	Port         string
+	GinMode      string
 	DatabasePath string
 }
 
