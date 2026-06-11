@@ -19,6 +19,12 @@ func main() {
 		})
 	})
 
+	r.GET("/hola", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "Hola mundo",
+		})
+	})
+
 	log.Printf("Starting server on port %s", cfg.Port)
 	r.Run(":" + cfg.Port)
 }
