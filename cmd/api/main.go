@@ -10,6 +10,8 @@ import (
 	"trama/internal/api/config"
 	"trama/internal/api/database"
 	"trama/internal/api/handlers"
+	"trama/internal/core"
+	coregen "trama/internal/gen/core"
 	_ "trama/docs"
 )
 
@@ -31,7 +33,12 @@ func main() {
 		log.Fatalf("Failed to migrate database: %v", err)
 	}
 
-	h := handlers.New(db)
+	q := coregen.New(db)
+	h := handlers.New(db,
+		core.NewGameSystemRepository(q),
+		core.NewEditionRepository(q),
+		core.NewFactionRepository(q),
+	)
 
 	gin.SetMode(cfg.GinMode)
 	r := gin.Default()

@@ -1,0 +1,16 @@
+{
+  "version": "2",
+  "sql": [
+    {
+      "engine": "sqlite",
+      "schema": "sql/core/schema.sql",
+      "queries": "sql/core/queries",
+      "gen": {
+        "go": {
+          "package": "coregen",
+          "out": "internal/gen/core"
+        }
+      }
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-.PHONY: build-api test lint swagger run-api populate-db stop clean
+.PHONY: build-api test lint swagger sqlc run-api populate-db stop clean
 
 APP_NAME   := trama
 BUILD_DIR  := ./build
@@ -16,6 +16,9 @@ lint:
 
 swagger:
 	swag init -g $(CMD_DIR)/main.go -o ./docs
+
+sqlc:
+	sqlc generate
 
 run-api:
 	docker compose up --build

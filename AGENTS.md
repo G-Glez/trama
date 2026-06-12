@@ -2,7 +2,7 @@
 
 ## What is TRAMA
 
-TRAMA (**T**ournament **R**ecords **A**nd **M**etrics **A**ssistant) is a Go REST API backend for managing tabletop/wargaming tournament records. It handles game system catalogs (systems, editions, factions) and tournament battle logs (players, tournaments, rounds, pairings, results).
+TRAMA (**T**ournament **R**ecords **A**nd **M**etrics **A**ssistant) is a Go REST API backend for managing tabletop/wargaming tournament records. It handles game system catalogs (systems, editions, factions).
 
 ## Technologies
 
@@ -23,6 +23,7 @@ Run all commands via `make`. See [Makefile](./Makefile).
 | `make test` | Run all tests |
 | `make lint` | Run linter |
 | `make swagger` | Regenerate Swagger docs |
+| `make sqlc` | Regenerate sqlc DAO code from SQL queries |
 | `make run-api` | Build Docker image and start container |
 | `make stop` | Stop the container |
 | `make clean` | Clean build artifacts |
@@ -36,7 +37,7 @@ Run all commands via `make`. See [Makefile](./Makefile).
 ## Conventions
 
 - **Language**: Go — standard formatting (`gofumpt`), idiomatic naming
-- **Architecture**: domain-driven, hexagonal-style — `internal/core/` for domain, `internal/api/` for delivery, `internal/battlelog/` for bounded context
+- **Architecture**: domain-driven, hexagonal-style — `internal/core/` for domain, `internal/api/` for delivery
 - **Imports**: stdlib first, then third-party, then internal; group with blank lines
 - **Errors**: return early, wrap with `fmt.Errorf("context: %w", err)`
 - **Testing**: `*_test.go` next to implementation; use `httptest` for HTTP handler tests
