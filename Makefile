@@ -1,4 +1,4 @@
-.PHONY: build-api test lint swagger run-api stop clean
+.PHONY: build-api test lint swagger run-api populate-db stop clean
 
 APP_NAME   := trama
 BUILD_DIR  := ./build
@@ -19,6 +19,19 @@ swagger:
 
 run-api:
 	docker compose up --build
+
+-include .env
+
+DATABASE_PATH ?= data/trama.db
+
+populate-db:
+	@echo "Clearing and populating database..."
+	rm -f "$(DATABASE_PATH)"
+	for f in localdb/*.sql; do \
+		echo "  Running $$f..."; \
+		sqlite3 "$(DATABASE_PATH)" < "$$f"; \
+	done
+	@echo "Database populated."
 
 stop:
 	docker compose down
