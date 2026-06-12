@@ -44,6 +44,7 @@ Run all commands via `make`. See [Makefile](./Makefile).
 - **SQLite migrations**: additive only, in `internal/api/database/database.go`
 - **No commented-out code** — delete it
 - **No hardcoded secrets** — use env vars loaded in `internal/api/config/config.go`
+- **Commits**: [Conventional Commits](https://www.conventionalcommits.org/) — `feat:` for features, `fix:` for bug fixes
 
 ## Configuration
 
@@ -58,3 +59,4 @@ Via environment variables (see `.env.example`):
 ## Git Policy
 
 **Do not** stage, commit, amend, push, merge, rebase, or create branches/PRs unless the user explicitly grants permission to do so.
+
