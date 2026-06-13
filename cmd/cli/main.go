@@ -7,13 +7,11 @@ import (
 )
 
 var (
-	p     = provider.NewProvider()
-	dbCon = p.DBCon()
-	cli   = p.Cli(dbCon)
+	p     = provider.NewProvisionedProvider()
 )
 
 func main() {
-	if err := cli.Start(); err != nil {
+	if err := p.CLI().Start(); err != nil {
 		os.Exit(1)
 	}
 }

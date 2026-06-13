@@ -3,45 +3,16 @@ package main
 import (
 	"log"
 
-	"github.com/gin-gonic/gin"
-	swaggerFiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
-
 	"trama/cmd/api/provider"
-	_ "trama/docs"
-	"trama/internal/api/handlers"
-	"trama/internal/core"
-	coregen "trama/internal/gen/core"
 )
 
-// @title           TRAMA API
-// @version         1.0
-// @description     Tournament Records and Metrics Assistant
-// @host            localhost:8080
-// @BasePath        /
+var (
+	p = provider.NewProvisionedProvider()
+)
+
 func main() {
-	p := provider.NewProvider()
+	defer p.Close()
 
-	cfg := p.Config()
-	db := p.DB()
-	defer db.Close()
-
-	q := coregen.New(db)
-	h := handlers.New(db,
-		core.NewGameSystemRepository(q),
-		core.NewEditionRepository(q),
-		core.NewFactionRepository(q),
-	)
-
-	gin.SetMode(cfg.GinMode)
-	r := gin.Default()
-
-	r.GET("/ping", h.Ping)
-
-	if cfg.GinMode == "debug" {
-		r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-	}
-
-	log.Printf("Starting server on port %s", cfg.Port)
-	r.Run(":" + cfg.Port)
+	log.Printf("Starting server on port %s", p.Config().Port)
+	p.Router().Run(":" + p.Config().Port)
 }

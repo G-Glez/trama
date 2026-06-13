@@ -27,34 +27,34 @@ type FactionOutput struct {
 }
 
 type CreateGameSystemInput struct {
-	Name string
+	Name string `json:"name"`
 }
 
 type UpdateGameSystemInput struct {
-	ID   string
-	Name string
+	ID   string `json:"id"`
+	Name string `json:"name"`
 }
 
 type CreateEditionInput struct {
-	GameSystemID string
-	Name         string
-	Version      string
+	GameSystemID string `json:"game_system_id"`
+	Name         string `json:"name"`
+	Version      string `json:"version"`
 }
 
 type UpdateEditionInput struct {
-	ID           string
-	GameSystemID string
-	Name         string
-	Version      string
+	ID           string `json:"id"`
+	GameSystemID string `json:"game_system_id"`
+	Name         string `json:"name"`
+	Version      string `json:"version"`
 }
 
 type CreateFactionInput struct {
-	EditionID string
-	Name      string
+	EditionID string `json:"edition_id"`
+	Name      string `json:"name"`
 }
 
 type UpdateFactionInput struct {
-	ID        string
-	EditionID string
-	Name      string
+	ID        string `json:"id"`
+	EditionID string `json:"edition_id"`
+	Name      string `json:"name"`
 }

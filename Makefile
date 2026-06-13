@@ -24,7 +24,7 @@ lint:
 	golangci-lint run ./...
 
 swagger:
-	swag init -g $(CMD_DIR)/main.go -o ./docs
+	swag init -g ./internal/api/router.go -o ./docs
 
 sqlc:
 	sqlc generate

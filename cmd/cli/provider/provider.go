@@ -15,26 +15,45 @@ type envConfig struct {
 }
 
 type Provider struct {
-	env envConfig
+	env   envConfig
+	dbCon *sql.DB
+	cli   *cli.CLI
 }
 
-func NewProvider() *Provider {
+func NewProvisionedProvider() *Provider {
 	var e envConfig
 	if err := env.Parse(&e); err != nil {
 		panic(err)
 	}
 
-	return &Provider{env: e}
+	p := &Provider{env: e}
+
+	p.provisionDB()
+	p.provisionCLI()
+
+	return p
 }
 
-func (p *Provider) Cli(db *sql.DB) *cli.CLI {
-	return cli.New(db)
+func (p *Provider) CLI() *cli.CLI {
+	return p.cli
 }
 
-func (p *Provider) DBCon() *sql.DB {
+func (p *Provider) provisionDB() {
+	if p.dbCon != nil {
+		return
+	}
+
 	db, err := dbcon.OpenSQLite(p.env.DatabasePath)
 	if err != nil {
 		log.Fatalf("Failed to open database: %v", err)
 	}
-	return db
+	p.dbCon = db
+}
+
+func (p *Provider) provisionCLI() {
+	if p.cli == nil {
+		p.provisionDB()
+	}
+
+	p.cli = cli.New(p.dbCon)
 }
