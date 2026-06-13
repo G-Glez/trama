@@ -10,15 +10,14 @@ import (
 	"trama/pkg/dbcon"
 )
 
-type Provider struct {
-	cfg *config.Config
-	db  *sql.DB
-}
-
 type envConfig struct {
 	Port         string `env:"PORT,required"`
 	GinMode      string `env:"GIN_MODE,required"`
 	DatabasePath string `env:"DATABASE_PATH,required"`
+}
+
+type Provider struct {
+	env envConfig
 }
 
 func NewProvider() *Provider {
@@ -27,25 +26,22 @@ func NewProvider() *Provider {
 		panic(err)
 	}
 
-	db, err := dbcon.OpenSQLite(e.DatabasePath)
+	return &Provider{env: e}
+}
+
+func (p *Provider) Config() *config.Config {
+	return &config.Config{
+		Port:         p.env.Port,
+		GinMode:      p.env.GinMode,
+		DatabasePath: p.env.DatabasePath,
+	}
+}
+
+func (p *Provider) DB() *sql.DB {
+	db, err := dbcon.OpenSQLite(p.env.DatabasePath)
 	if err != nil {
 		log.Fatalf("Failed to open database: %v", err)
 	}
 
-	return &Provider{
-		cfg: &config.Config{
-			Port:         e.Port,
-			GinMode:      e.GinMode,
-			DatabasePath: e.DatabasePath,
-		},
-		db: db,
-	}
-}
-
-func (p *Provider) Config() *config.Config {
-	return p.cfg
-}
-
-func (p *Provider) DB() *sql.DB {
-	return p.db
+	return db
 }

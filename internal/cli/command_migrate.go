@@ -2,11 +2,10 @@ package cli
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/spf13/cobra"
 
-	"trama/internal/migrate"
+	"trama/pkg/migrate"
 )
 
 func migrateCmd(c *CLI) *cobra.Command {
@@ -17,7 +16,7 @@ func migrateCmd(c *CLI) *cobra.Command {
 			if err := migrate.Run(c.DB); err != nil {
 				return fmt.Errorf("migrate: %w", err)
 			}
-			log.Println("Migrations applied successfully")
+
 			return nil
 		},
 	}

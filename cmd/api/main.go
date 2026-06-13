@@ -21,10 +21,10 @@ import (
 // @BasePath        /
 func main() {
 	p := provider.NewProvider()
-	defer p.DB().Close()
 
 	cfg := p.Config()
 	db := p.DB()
+	defer db.Close()
 
 	q := coregen.New(db)
 	h := handlers.New(db,

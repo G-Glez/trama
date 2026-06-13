@@ -14,6 +14,7 @@ COPY --from=builder /trama .
 COPY --from=builder /trama-cli .
 COPY entrypoint.sh /entrypoint.sh
 COPY localdb /app/localdb
+COPY migrations /app/migrations
 RUN chmod +x /entrypoint.sh
 EXPOSE 8080
 ENTRYPOINT ["/entrypoint.sh"]
