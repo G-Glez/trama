@@ -1,12 +1,21 @@
-.PHONY: build-api test lint swagger sqlc run-api populate-db stop clean
+.PHONY: build-api build-cli test lint swagger sqlc run-api populate-db migrate set-env stop clean
 
-APP_NAME   := trama
-BUILD_DIR  := ./build
-CMD_DIR    := ./cmd/api
+APP_NAME      := trama
+CLI_NAME      := trama-cli
+BUILD_DIR     := ./build
+CMD_DIR       := ./cmd/api
+CLI_DIR       := ./cmd/cli
+-include .local.env
+
+.EXPORT_ALL_VARIABLES:
 
 build-api:
 	@echo "Building $(APP_NAME)..."
 	go build -o $(BUILD_DIR)/$(APP_NAME) $(CMD_DIR)
+
+build-cli:
+	@echo "Building $(CLI_NAME)..."
+	go build -o $(BUILD_DIR)/$(CLI_NAME) $(CLI_DIR)
 
 test:
 	go test ./...
@@ -23,10 +32,6 @@ sqlc:
 run-api:
 	docker compose up --build
 
--include .env
-
-DATABASE_PATH ?= data/trama.db
-
 populate-db:
 	@echo "Clearing and populating database..."
 	rm -f "$(DATABASE_PATH)"
@@ -35,6 +40,16 @@ populate-db:
 		sqlite3 "$(DATABASE_PATH)" < "$$f"; \
 	done
 	@echo "Database populated."
+
+migrate: build-cli
+	./build/$(CLI_NAME) migrate
+
+set-env:
+	@echo "=== Environment loaded from .local.env ==="
+	@echo "  DATABASE_PATH=$(DATABASE_PATH)"
+	@echo ""
+	@echo "Variables are exported to subprocesses. Run:"
+	@echo "  make migrate"
 
 stop:
 	docker compose down

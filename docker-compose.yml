@@ -4,7 +4,7 @@ services:
     ports:
       - "${PORT:-8080}:8080"
     env_file:
-      - .env
+      - .local.env
     volumes:
       - ./data:/app/data
       - ./localdb:/app/localdb

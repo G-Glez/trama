@@ -1,6 +1,4 @@
-CREATE TABLE IF NOT EXISTS greetings (
-    id INTEGER PRIMARY KEY AUTOINCREMENT
-);
+-- v0001: Core domain tables (game_systems, editions, factions)
 
 CREATE TABLE IF NOT EXISTS game_systems (
     id         TEXT PRIMARY KEY,
@@ -25,5 +23,3 @@ CREATE TABLE IF NOT EXISTS factions (
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
-
-

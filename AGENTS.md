@@ -20,7 +20,9 @@ Run all commands via `make`. See [Makefile](./Makefile).
 | Command | Description |
 |---|---|---|
 | `make build-api` | Build the API binary locally |
+| `make build-cli` | Build the CLI binary locally |
 | `make test` | Run all tests |
+| `make migrate` | Build CLI and run DB migrations |
 | `make lint` | Run linter |
 | `make swagger` | Regenerate Swagger docs |
 | `make sqlc` | Regenerate sqlc DAO code from SQL queries |
@@ -41,14 +43,14 @@ Run all commands via `make`. See [Makefile](./Makefile).
 - **Imports**: stdlib first, then third-party, then internal; group with blank lines
 - **Errors**: return early, wrap with `fmt.Errorf("context: %w", err)`
 - **Testing**: `*_test.go` next to implementation; use `httptest` for HTTP handler tests
-- **SQLite migrations**: additive only, in `internal/api/database/database.go`
+- **SQLite migrations**: additive only, SQL files in `internal/migrate/migrations/`, runner in `internal/migrate/migrate.go`
 - **No commented-out code** — delete it
-- **No hardcoded secrets** — use env vars loaded in `internal/api/config/config.go`
-- **Commits**: [Conventional Commits](https://www.conventionalcommits.org/) — `feat:` for features, `fix:` for bug fixes
+- **No hardcoded secrets** — use env vars loaded in `cmd/*/provider/provider.go` via `caarlos0/env`
+- **Commits**: [Conventional Commits](https://www.conventionalcommits.org/) — `feat:` for features, `fix:` for bug fixes, `mid:` for intermediate/wip commits
 
 ## Configuration
 
-Via environment variables (see `.env.example`):
+Via environment variables (see `.local.env`):
 
 | Variable | Default | Description |
 |---|---|---|

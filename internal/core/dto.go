@@ -54,7 +54,7 @@ type CreateFactionInput struct {
 }
 
 type UpdateFactionInput struct {
-	ID         string
-	EditionID  string
-	Name       string
+	ID        string
+	EditionID string
+	Name      string
 }

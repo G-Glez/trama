@@ -54,27 +54,3 @@ func (h *Handler) Ping(c *gin.Context) {
 		"message": "pong",
 	})
 }
-
-// @Summary      Say hello
-// @Description  Returns a greeting and stores an ID in SQLite
-// @Produce      json
-// @Success      200  {object}  map[string]interface{}
-// @Router       /hola [get]
-func (h *Handler) Hola(c *gin.Context) {
-	result, err := h.DB.Exec("INSERT INTO greetings DEFAULT VALUES")
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	id, err := result.LastInsertId()
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Hola mundo",
-		"id":      id,
-	})
-}

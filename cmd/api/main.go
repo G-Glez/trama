@@ -7,12 +7,11 @@ import (
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 
-	"trama/internal/api/config"
-	"trama/internal/api/database"
+	"trama/cmd/api/provider"
+	_ "trama/docs"
 	"trama/internal/api/handlers"
 	"trama/internal/core"
 	coregen "trama/internal/gen/core"
-	_ "trama/docs"
 )
 
 // @title           TRAMA API
@@ -21,17 +20,11 @@ import (
 // @host            localhost:8080
 // @BasePath        /
 func main() {
-	cfg := config.Load()
+	p := provider.NewProvider()
+	defer p.DB().Close()
 
-	db, err := database.Open(cfg.DatabasePath)
-	if err != nil {
-		log.Fatalf("Failed to open database: %v", err)
-	}
-	defer db.Close()
-
-	if err := database.Migrate(db); err != nil {
-		log.Fatalf("Failed to migrate database: %v", err)
-	}
+	cfg := p.Config()
+	db := p.DB()
 
 	q := coregen.New(db)
 	h := handlers.New(db,
@@ -44,7 +37,6 @@ func main() {
 	r := gin.Default()
 
 	r.GET("/ping", h.Ping)
-	r.GET("/hola", h.Hola)
 
 	if cfg.GinMode == "debug" {
 		r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
