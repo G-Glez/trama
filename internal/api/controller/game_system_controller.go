@@ -1,81 +1,154 @@
 package controller
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 
+	"trama/internal/api/apierror"
 	"trama/internal/core"
 )
 
-type GameSystemController struct {
-	service *core.GameSystemService
+type gameSystemService interface {
+	GetAll(ctx context.Context) ([]core.GameSystemOutput, error)
+	Get(ctx context.Context, id uuid.UUID) (core.GameSystemOutput, error)
+	Create(ctx context.Context, in core.CreateGameSystemInput) (core.GameSystemOutput, error)
+	Update(ctx context.Context, in core.UpdateGameSystemInput) error
+	Delete(ctx context.Context, id uuid.UUID) error
 }
 
-func NewGameSystemController(svc *core.GameSystemService) *GameSystemController {
+type GameSystemController struct {
+	service gameSystemService
+}
+
+func NewGameSystemController(svc gameSystemService) *GameSystemController {
 	return &GameSystemController{service: svc}
 }
 
 func (c *GameSystemController) RegisterRoutes(rg *gin.RouterGroup) {
 	gs := rg.Group("/game-systems")
-	gs.GET("", c.List)
-	gs.POST("", c.Create)
-	gs.GET("/:id", c.Get)
-	gs.PUT("/:id", c.Update)
-	gs.DELETE("/:id", c.Delete)
+	gs.GET("", c.list)
+	gs.POST("", c.create)
+	gs.GET("/:id", c.get)
+	gs.PUT("/:id", c.update)
+	gs.DELETE("/:id", c.delete)
 }
 
-func (c *GameSystemController) List(ctx *gin.Context) {
-	items, err := c.service.GetAll()
+// @Summary      List game systems
+// @Description  Get all game systems
+// @Tags         game-systems
+// @Produce      json
+// @Success      200  {array}   core.GameSystemOutput
+// @Failure      500  {object}  apierror.Error
+// @Router       /api/v1/game-systems [get]
+func (c *GameSystemController) list(ctx *gin.Context) {
+	items, err := 	c.service.GetAll(ctx.Request.Context())
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		apierror.HandleError(ctx, err)
 		return
 	}
 	ctx.JSON(http.StatusOK, items)
 }
 
-func (c *GameSystemController) Create(ctx *gin.Context) {
+// @Summary      Create game system
+// @Description  Create a new game system
+// @Tags         game-systems
+// @Accept       json
+// @Produce      json
+// @Param        body  body      core.CreateGameSystemInput  true  "Game system data"
+// @Success      201   {object}  core.GameSystemOutput
+// @Failure      400   {object}  apierror.Error
+// @Failure      500   {object}  apierror.Error
+// @Router       /api/v1/game-systems [post]
+func (c *GameSystemController) create(ctx *gin.Context) {
 	var in core.CreateGameSystemInput
 	if err := ctx.ShouldBindJSON(&in); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		apierror.HandleError(ctx, apierror.BadRequest(err.Error()))
 		return
 	}
-	out, err := c.service.Create(in)
+	out, err := c.service.Create(ctx.Request.Context(), in)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		apierror.HandleError(ctx, err)
 		return
 	}
 	ctx.JSON(http.StatusCreated, out)
 }
 
-func (c *GameSystemController) Get(ctx *gin.Context) {
+// @Summary      Get game system
+// @Description  Get a game system by ID
+// @Tags         game-systems
+// @Produce      json
+// @Param        id   path      string  true  "Game system ID"
+// @Success      200  {object}  core.GameSystemOutput
+// @Failure      404  {object}  apierror.Error
+// @Failure      500  {object}  apierror.Error
+// @Router       /api/v1/game-systems/{id} [get]
+func (c *GameSystemController) get(ctx *gin.Context) {
 	id := ctx.Param("id")
-	out, err := c.service.Get(id)
+	uid, err := uuid.Parse(id)
 	if err != nil {
-		ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		apierror.HandleError(ctx, apierror.BadRequest("invalid game system id"))
+		return
+	}
+	out, err := c.service.Get(ctx.Request.Context(), uid)
+	if err != nil {
+		apierror.HandleError(ctx, err)
 		return
 	}
 	ctx.JSON(http.StatusOK, out)
 }
 
-func (c *GameSystemController) Update(ctx *gin.Context) {
+// @Summary      Update game system
+// @Description  Update a game system by ID
+// @Tags         game-systems
+// @Accept       json
+// @Param        id    path      string                    true  "Game system ID"
+// @Param        body  body      core.UpdateGameSystemInput  true  "Game system data"
+// @Success      204   {object}  nil
+// @Failure      400   {object}  apierror.Error
+// @Failure      404   {object}  apierror.Error
+// @Failure      500   {object}  apierror.Error
+// @Router       /api/v1/game-systems/{id} [put]
+func (c *GameSystemController) update(ctx *gin.Context) {
 	var in core.UpdateGameSystemInput
 	if err := ctx.ShouldBindJSON(&in); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		apierror.HandleError(ctx, apierror.BadRequest(err.Error()))
 		return
 	}
-	in.ID = ctx.Param("id")
-	if err := c.service.Update(in); err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+
+	uid, err := uuid.Parse(ctx.Param("id"))
+	if err != nil {
+		apierror.HandleError(ctx, apierror.BadRequest("invalid game system id"))
+		return
+	}
+	in.ID = uid
+
+	if err := c.service.Update(ctx.Request.Context(), in); err != nil {
+		apierror.HandleError(ctx, err)
 		return
 	}
 	ctx.Status(http.StatusNoContent)
 }
 
-func (c *GameSystemController) Delete(ctx *gin.Context) {
+// @Summary      Delete game system
+// @Description  Delete a game system by ID
+// @Tags         game-systems
+// @Param        id   path      string  true  "Game system ID"
+// @Success      204  {object}  nil
+// @Failure      404  {object}  apierror.Error
+// @Failure      500  {object}  apierror.Error
+// @Router       /api/v1/game-systems/{id} [delete]
+func (c *GameSystemController) delete(ctx *gin.Context) {
 	id := ctx.Param("id")
-	if err := c.service.Delete(id); err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	uid, err := uuid.Parse(id)
+	if err != nil {
+		apierror.HandleError(ctx, apierror.BadRequest("invalid game system id"))
+		return
+	}
+	if err := c.service.Delete(ctx.Request.Context(), uid); err != nil {
+		apierror.HandleError(ctx, err)
 		return
 	}
 	ctx.Status(http.StatusNoContent)

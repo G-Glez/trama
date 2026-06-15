@@ -2,6 +2,9 @@ package core
 
 import (
 	"context"
+	"database/sql"
+	"errors"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -18,74 +21,98 @@ type factionQuerier interface {
 }
 
 type FactionSQLRepository struct {
-	q factionQuerier
+	querier factionQuerier
 }
 
-func NewFactionRepository(q factionQuerier) *FactionSQLRepository {
-	return &FactionSQLRepository{q: q}
+func NewFactionRepository(querier factionQuerier) *FactionSQLRepository {
+	return &FactionSQLRepository{querier: querier}
 }
 
-func (r *FactionSQLRepository) Create(f Faction) (Faction, error) {
+func (r *FactionSQLRepository) Create(ctx context.Context, f Faction) (Faction, error) {
 	f.ID = FactionID{uuid.New()}
 	now := time.Now()
 	f.CreatedAt = now
 	f.UpdatedAt = now
 
-	err := r.q.CreateFaction(context.Background(), coregen.CreateFactionParams{
+	err := r.querier.CreateFaction(ctx, coregen.CreateFactionParams{
 		ID:        f.ID.String(),
 		EditionID: f.EditionID.String(),
 		Name:      f.Name,
 		CreatedAt: f.CreatedAt,
 		UpdatedAt: f.UpdatedAt,
 	})
-
-	return f, err
-}
-
-func (r *FactionSQLRepository) Get(id FactionID) (Faction, error) {
-	f, err := r.q.GetFaction(context.Background(), id.String())
 	if err != nil {
-		return Faction{}, err
+		return Faction{}, fmt.Errorf("%w: %w", ErrDB, err)
 	}
 
-	return *mapFaction(&f), nil
+	return f, nil
 }
 
-func (r *FactionSQLRepository) GetAllByEdition(edID EditionID) ([]Faction, error) {
-	items, err := r.q.ListFactionsByEdition(context.Background(), edID.String())
+func (r *FactionSQLRepository) Get(ctx context.Context, id FactionID) (Faction, error) {
+	f, err := r.querier.GetFaction(ctx, id.String())
 	if err != nil {
-		return nil, err
+		if errors.Is(err, sql.ErrNoRows) {
+			return Faction{}, ErrNotFound
+		}
+		return Faction{}, fmt.Errorf("%w: %w", ErrDB, err)
+	}
+
+	return toDomainFaction(f)
+}
+
+func (r *FactionSQLRepository) GetAllByEdition(ctx context.Context, edID EditionID) ([]Faction, error) {
+	items, err := r.querier.ListFactionsByEdition(ctx, edID.String())
+	if err != nil {
+		return nil, fmt.Errorf("%w: %w", ErrDB, err)
 	}
 
 	list := make([]Faction, len(items))
 	for i, f := range items {
-		list[i] = *mapFaction(&f)
+		list[i], err = toDomainFaction(f)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return list, nil
 }
 
-func (r *FactionSQLRepository) Update(f Faction) error {
-	return r.q.UpdateFaction(context.Background(), coregen.UpdateFactionParams{
+func (r *FactionSQLRepository) Update(ctx context.Context, f Faction) error {
+	err := r.querier.UpdateFaction(ctx, coregen.UpdateFactionParams{
 		EditionID: f.EditionID.String(),
 		Name:      f.Name,
 		UpdatedAt: f.UpdatedAt,
 		ID:        f.ID.String(),
 	})
+	if err != nil {
+		return fmt.Errorf("%w: %w", ErrDB, err)
+	}
+	return nil
 }
 
-func (r *FactionSQLRepository) Delete(id FactionID) error {
-	return r.q.DeleteFaction(context.Background(), id.String())
+func (r *FactionSQLRepository) Delete(ctx context.Context, id FactionID) error {
+	err := r.querier.DeleteFaction(ctx, id.String())
+	if err != nil {
+		return fmt.Errorf("%w: %w", ErrDB, err)
+	}
+	return nil
 }
 
-func mapFaction(f *coregen.Faction) *Faction {
-	uid, _ := uuid.Parse(f.ID)
-	edUID, _ := uuid.Parse(f.EditionID)
+func toDomainFaction(f coregen.Faction) (Faction, error) {
+	uid, err := uuid.Parse(f.ID)
+	if err != nil {
+		return Faction{}, fmt.Errorf("%w: invalid uuid: %w", ErrDataCorruption, err)
+	}
 
-	return &Faction{
+	edUID, err := uuid.Parse(f.EditionID)
+	if err != nil {
+		return Faction{}, fmt.Errorf("%w: invalid uuid: %w", ErrDataCorruption, err)
+	}
+
+	return Faction{
 		ID:        FactionID{uid},
 		EditionID: EditionID{edUID},
 		Name:      f.Name,
 		CreatedAt: f.CreatedAt,
 		UpdatedAt: f.UpdatedAt,
-	}
+	}, nil
 }

@@ -1,17 +1,20 @@
 package core
 
 import (
+	"context"
+	"errors"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
 )
 
 type gameSystemRepository interface {
-	Create(gs GameSystem) (GameSystem, error)
-	Get(id GameSystemID) (GameSystem, error)
-	GetAll() ([]GameSystem, error)
-	Update(gs GameSystem) error
-	Delete(id GameSystemID) error
+	Create(ctx context.Context, gs GameSystem) (GameSystem, error)
+	Get(ctx context.Context, id GameSystemID) (GameSystem, error)
+	GetAll(ctx context.Context) ([]GameSystem, error)
+	Update(ctx context.Context, gs GameSystem) error
+	Delete(ctx context.Context, id GameSystemID) error
 }
 
 type GameSystemService struct {
@@ -22,9 +25,9 @@ func NewGameSystemService(repo gameSystemRepository) *GameSystemService {
 	return &GameSystemService{repo: repo}
 }
 
-func (s *GameSystemService) Create(in CreateGameSystemInput) (GameSystemOutput, error) {
+func (s *GameSystemService) Create(ctx context.Context, in CreateGameSystemInput) (GameSystemOutput, error) {
 	gs := GameSystem{Name: in.Name}
-	created, err := s.repo.Create(gs)
+	created, err := s.repo.Create(ctx, gs)
 	if err != nil {
 		return GameSystemOutput{}, err
 	}
@@ -32,22 +35,20 @@ func (s *GameSystemService) Create(in CreateGameSystemInput) (GameSystemOutput, 
 	return toGameSystemOutput(created), nil
 }
 
-func (s *GameSystemService) Get(id string) (GameSystemOutput, error) {
-	uid, err := uuid.Parse(id)
+func (s *GameSystemService) Get(ctx context.Context, id uuid.UUID) (GameSystemOutput, error) {
+	gs, err := s.repo.Get(ctx, GameSystemID{id})
 	if err != nil {
-		return GameSystemOutput{}, err
-	}
-
-	gs, err := s.repo.Get(GameSystemID{uid})
-	if err != nil {
+		if errors.Is(err, ErrNotFound) {
+			return GameSystemOutput{}, fmt.Errorf("game system %s: %w", id, ErrNotFound)
+		}
 		return GameSystemOutput{}, err
 	}
 
 	return toGameSystemOutput(gs), nil
 }
 
-func (s *GameSystemService) GetAll() ([]GameSystemOutput, error) {
-	items, err := s.repo.GetAll()
+func (s *GameSystemService) GetAll(ctx context.Context) ([]GameSystemOutput, error) {
+	items, err := s.repo.GetAll(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -60,33 +61,23 @@ func (s *GameSystemService) GetAll() ([]GameSystemOutput, error) {
 	return out, nil
 }
 
-func (s *GameSystemService) Update(in UpdateGameSystemInput) error {
-	uid, err := uuid.Parse(in.ID)
-	if err != nil {
-		return err
-	}
-
+func (s *GameSystemService) Update(ctx context.Context, in UpdateGameSystemInput) error {
 	gs := GameSystem{
-		ID:        GameSystemID{uid},
+		ID:        GameSystemID{in.ID},
 		Name:      in.Name,
 		UpdatedAt: time.Now(),
 	}
 
-	return s.repo.Update(gs)
+	return s.repo.Update(ctx, gs)
 }
 
-func (s *GameSystemService) Delete(id string) error {
-	uid, err := uuid.Parse(id)
-	if err != nil {
-		return err
-	}
-
-	return s.repo.Delete(GameSystemID{uid})
+func (s *GameSystemService) Delete(ctx context.Context, id uuid.UUID) error {
+	return s.repo.Delete(ctx, GameSystemID{id})
 }
 
 func toGameSystemOutput(gs GameSystem) GameSystemOutput {
 	return GameSystemOutput{
-		ID:        gs.ID.String(),
+		ID:        gs.ID.UUID,
 		Name:      gs.Name,
 		CreatedAt: gs.CreatedAt,
 		UpdatedAt: gs.UpdatedAt,

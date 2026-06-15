@@ -1,17 +1,21 @@
 package core
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type GameSystemOutput struct {
-	ID        string    `json:"id"`
+	ID        uuid.UUID `json:"id"`
 	Name      string    `json:"name"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type EditionOutput struct {
-	ID           string    `json:"id"`
-	GameSystemID string    `json:"game_system_id"`
+	ID           uuid.UUID `json:"id"`
+	GameSystemID uuid.UUID `json:"game_system_id"`
 	Name         string    `json:"name"`
 	Version      string    `json:"version"`
 	CreatedAt    time.Time `json:"created_at"`
@@ -19,8 +23,8 @@ type EditionOutput struct {
 }
 
 type FactionOutput struct {
-	ID        string    `json:"id"`
-	EditionID string    `json:"edition_id"`
+	ID        uuid.UUID `json:"id"`
+	EditionID uuid.UUID `json:"edition_id"`
 	Name      string    `json:"name"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
@@ -31,30 +35,30 @@ type CreateGameSystemInput struct {
 }
 
 type UpdateGameSystemInput struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+	ID   uuid.UUID `json:"-"`
+	Name string    `json:"name"`
 }
 
 type CreateEditionInput struct {
-	GameSystemID string `json:"game_system_id"`
-	Name         string `json:"name"`
-	Version      string `json:"version"`
+	GameSystemID uuid.UUID `json:"game_system_id"`
+	Name         string    `json:"name"`
+	Version      string    `json:"version"`
 }
 
 type UpdateEditionInput struct {
-	ID           string `json:"id"`
-	GameSystemID string `json:"game_system_id"`
-	Name         string `json:"name"`
-	Version      string `json:"version"`
+	ID           uuid.UUID `json:"-"`
+	GameSystemID uuid.UUID `json:"game_system_id"`
+	Name         string    `json:"name"`
+	Version      string    `json:"version"`
 }
 
 type CreateFactionInput struct {
-	EditionID string `json:"edition_id"`
-	Name      string `json:"name"`
+	EditionID uuid.UUID `json:"edition_id"`
+	Name      string    `json:"name"`
 }
 
 type UpdateFactionInput struct {
-	ID        string `json:"id"`
-	EditionID string `json:"edition_id"`
-	Name      string `json:"name"`
+	ID        uuid.UUID `json:"-"`
+	EditionID uuid.UUID `json:"edition_id"`
+	Name      string    `json:"name"`
 }

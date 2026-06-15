@@ -1,17 +1,20 @@
 package core
 
 import (
+	"context"
+	"errors"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
 )
 
 type factionRepository interface {
-	Create(f Faction) (Faction, error)
-	Get(id FactionID) (Faction, error)
-	GetAllByEdition(edID EditionID) ([]Faction, error)
-	Update(f Faction) error
-	Delete(id FactionID) error
+	Create(ctx context.Context, f Faction) (Faction, error)
+	Get(ctx context.Context, id FactionID) (Faction, error)
+	GetAllByEdition(ctx context.Context, edID EditionID) ([]Faction, error)
+	Update(ctx context.Context, f Faction) error
+	Delete(ctx context.Context, id FactionID) error
 }
 
 type FactionService struct {
@@ -22,18 +25,13 @@ func NewFactionService(repo factionRepository) *FactionService {
 	return &FactionService{repo: repo}
 }
 
-func (s *FactionService) Create(in CreateFactionInput) (FactionOutput, error) {
-	edID, err := uuid.Parse(in.EditionID)
-	if err != nil {
-		return FactionOutput{}, err
-	}
-
+func (s *FactionService) Create(ctx context.Context, in CreateFactionInput) (FactionOutput, error) {
 	f := Faction{
-		EditionID: EditionID{edID},
+		EditionID: EditionID{in.EditionID},
 		Name:      in.Name,
 	}
 
-	created, err := s.repo.Create(f)
+	created, err := s.repo.Create(ctx, f)
 	if err != nil {
 		return FactionOutput{}, err
 	}
@@ -41,27 +39,20 @@ func (s *FactionService) Create(in CreateFactionInput) (FactionOutput, error) {
 	return toFactionOutput(created), nil
 }
 
-func (s *FactionService) Get(id string) (FactionOutput, error) {
-	uid, err := uuid.Parse(id)
+func (s *FactionService) Get(ctx context.Context, id uuid.UUID) (FactionOutput, error) {
+	f, err := s.repo.Get(ctx, FactionID{id})
 	if err != nil {
-		return FactionOutput{}, err
-	}
-
-	f, err := s.repo.Get(FactionID{uid})
-	if err != nil {
+		if errors.Is(err, ErrNotFound) {
+			return FactionOutput{}, fmt.Errorf("faction %s: %w", id, ErrNotFound)
+		}
 		return FactionOutput{}, err
 	}
 
 	return toFactionOutput(f), nil
 }
 
-func (s *FactionService) GetAllByEdition(edID string) ([]FactionOutput, error) {
-	uid, err := uuid.Parse(edID)
-	if err != nil {
-		return nil, err
-	}
-
-	items, err := s.repo.GetAllByEdition(EditionID{uid})
+func (s *FactionService) GetAllByEdition(ctx context.Context, edID uuid.UUID) ([]FactionOutput, error) {
+	items, err := s.repo.GetAllByEdition(ctx, EditionID{edID})
 	if err != nil {
 		return nil, err
 	}
@@ -74,40 +65,25 @@ func (s *FactionService) GetAllByEdition(edID string) ([]FactionOutput, error) {
 	return out, nil
 }
 
-func (s *FactionService) Update(in UpdateFactionInput) error {
-	uid, err := uuid.Parse(in.ID)
-	if err != nil {
-		return err
-	}
-
-	edID, err := uuid.Parse(in.EditionID)
-	if err != nil {
-		return err
-	}
-
+func (s *FactionService) Update(ctx context.Context, in UpdateFactionInput) error {
 	f := Faction{
-		ID:        FactionID{uid},
-		EditionID: EditionID{edID},
+		ID:        FactionID{in.ID},
+		EditionID: EditionID{in.EditionID},
 		Name:      in.Name,
 		UpdatedAt: time.Now(),
 	}
 
-	return s.repo.Update(f)
+	return s.repo.Update(ctx, f)
 }
 
-func (s *FactionService) Delete(id string) error {
-	uid, err := uuid.Parse(id)
-	if err != nil {
-		return err
-	}
-
-	return s.repo.Delete(FactionID{uid})
+func (s *FactionService) Delete(ctx context.Context, id uuid.UUID) error {
+	return s.repo.Delete(ctx, FactionID{id})
 }
 
 func toFactionOutput(f Faction) FactionOutput {
 	return FactionOutput{
-		ID:        f.ID.String(),
-		EditionID: f.EditionID.String(),
+		ID:        f.ID.UUID,
+		EditionID: f.EditionID.UUID,
 		Name:      f.Name,
 		CreatedAt: f.CreatedAt,
 		UpdatedAt: f.UpdatedAt,

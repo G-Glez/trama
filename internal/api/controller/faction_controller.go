@@ -1,86 +1,163 @@
 package controller
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 
+	"trama/internal/api/apierror"
 	"trama/internal/core"
 )
 
-type FactionController struct {
-	service *core.FactionService
+type factionService interface {
+	GetAllByEdition(ctx context.Context, edID uuid.UUID) ([]core.FactionOutput, error)
+	Create(ctx context.Context, in core.CreateFactionInput) (core.FactionOutput, error)
+	Get(ctx context.Context, id uuid.UUID) (core.FactionOutput, error)
+	Update(ctx context.Context, in core.UpdateFactionInput) error
+	Delete(ctx context.Context, id uuid.UUID) error
 }
 
-func NewFactionController(svc *core.FactionService) *FactionController {
+type FactionController struct {
+	service factionService
+}
+
+func NewFactionController(svc factionService) *FactionController {
 	return &FactionController{service: svc}
 }
 
 func (c *FactionController) RegisterRoutes(rg *gin.RouterGroup) {
 	factions := rg.Group("/factions")
-	factions.GET("", c.List)
-	factions.POST("", c.Create)
-	factions.GET("/:id", c.Get)
-	factions.PUT("/:id", c.Update)
-	factions.DELETE("/:id", c.Delete)
+	factions.GET("", c.list)
+	factions.POST("", c.create)
+	factions.GET("/:id", c.get)
+	factions.PUT("/:id", c.update)
+	factions.DELETE("/:id", c.delete)
 }
 
-func (c *FactionController) List(ctx *gin.Context) {
-	edID := ctx.Query("edition_id")
-	if edID == "" {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "edition_id query parameter is required"})
+// @Summary      List factions
+// @Description  Get all factions for an edition
+// @Tags         factions
+// @Produce      json
+// @Param        edition_id  query     string  true  "Edition ID"
+// @Success      200         {array}   core.FactionOutput
+// @Failure      400         {object}  apierror.Error
+// @Failure      500         {object}  apierror.Error
+// @Router       /api/v1/factions [get]
+func (c *FactionController) list(ctx *gin.Context) {
+	var req struct {
+		EditionID uuid.UUID `form:"edition_id" binding:"required"`
+	}
+	if err := ctx.ShouldBindQuery(&req); err != nil {
+		apierror.HandleError(ctx, apierror.BadRequest(err.Error()))
 		return
 	}
-	items, err := c.service.GetAllByEdition(edID)
+	items, err := c.service.GetAllByEdition(ctx.Request.Context(), req.EditionID)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		apierror.HandleError(ctx, err)
 		return
 	}
 	ctx.JSON(http.StatusOK, items)
 }
 
-func (c *FactionController) Create(ctx *gin.Context) {
+// @Summary      Create faction
+// @Description  Create a new faction for an edition
+// @Tags         factions
+// @Accept       json
+// @Produce      json
+// @Param        body  body      core.CreateFactionInput  true  "Faction data"
+// @Success      201   {object}  core.FactionOutput
+// @Failure      400   {object}  apierror.Error
+// @Failure      500   {object}  apierror.Error
+// @Router       /api/v1/factions [post]
+func (c *FactionController) create(ctx *gin.Context) {
 	var in core.CreateFactionInput
 	if err := ctx.ShouldBindJSON(&in); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		apierror.HandleError(ctx, apierror.BadRequest(err.Error()))
 		return
 	}
-	out, err := c.service.Create(in)
+	out, err := c.service.Create(ctx.Request.Context(), in)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		apierror.HandleError(ctx, err)
 		return
 	}
 	ctx.JSON(http.StatusCreated, out)
 }
 
-func (c *FactionController) Get(ctx *gin.Context) {
+// @Summary      Get faction
+// @Description  Get a faction by ID
+// @Tags         factions
+// @Produce      json
+// @Param        id   path      string  true  "Faction ID"
+// @Success      200  {object}  core.FactionOutput
+// @Failure      404  {object}  apierror.Error
+// @Failure      500  {object}  apierror.Error
+// @Router       /api/v1/factions/{id} [get]
+func (c *FactionController) get(ctx *gin.Context) {
 	id := ctx.Param("id")
-	out, err := c.service.Get(id)
+	uid, err := uuid.Parse(id)
 	if err != nil {
-		ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		apierror.HandleError(ctx, apierror.BadRequest("invalid faction id"))
+		return
+	}
+	out, err := c.service.Get(ctx.Request.Context(), uid)
+	if err != nil {
+		apierror.HandleError(ctx, err)
 		return
 	}
 	ctx.JSON(http.StatusOK, out)
 }
 
-func (c *FactionController) Update(ctx *gin.Context) {
+// @Summary      Update faction
+// @Description  Update a faction by ID
+// @Tags         factions
+// @Accept       json
+// @Param        id    path      string                    true  "Faction ID"
+// @Param        body  body      core.UpdateFactionInput   true  "Faction data"
+// @Success      204   {object}  nil
+// @Failure      400   {object}  apierror.Error
+// @Failure      404   {object}  apierror.Error
+// @Failure      500   {object}  apierror.Error
+// @Router       /api/v1/factions/{id} [put]
+func (c *FactionController) update(ctx *gin.Context) {
 	var in core.UpdateFactionInput
 	if err := ctx.ShouldBindJSON(&in); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		apierror.HandleError(ctx, apierror.BadRequest(err.Error()))
 		return
 	}
-	in.ID = ctx.Param("id")
-	if err := c.service.Update(in); err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+
+	uid, err := uuid.Parse(ctx.Param("id"))
+	if err != nil {
+		apierror.HandleError(ctx, apierror.BadRequest("invalid faction id"))
+		return
+	}
+	in.ID = uid
+
+	if err := c.service.Update(ctx.Request.Context(), in); err != nil {
+		apierror.HandleError(ctx, err)
 		return
 	}
 	ctx.Status(http.StatusNoContent)
 }
 
-func (c *FactionController) Delete(ctx *gin.Context) {
+// @Summary      Delete faction
+// @Description  Delete a faction by ID
+// @Tags         factions
+// @Param        id   path      string  true  "Faction ID"
+// @Success      204  {object}  nil
+// @Failure      404  {object}  apierror.Error
+// @Failure      500  {object}  apierror.Error
+// @Router       /api/v1/factions/{id} [delete]
+func (c *FactionController) delete(ctx *gin.Context) {
 	id := ctx.Param("id")
-	if err := c.service.Delete(id); err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	uid, err := uuid.Parse(id)
+	if err != nil {
+		apierror.HandleError(ctx, apierror.BadRequest("invalid faction id"))
+		return
+	}
+	if err := c.service.Delete(ctx.Request.Context(), uid); err != nil {
+		apierror.HandleError(ctx, err)
 		return
 	}
 	ctx.Status(http.StatusNoContent)
