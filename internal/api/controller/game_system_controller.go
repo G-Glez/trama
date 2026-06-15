@@ -44,7 +44,7 @@ func (c *GameSystemController) RegisterRoutes(rg *gin.RouterGroup) {
 // @Failure      500  {object}  apierror.Error
 // @Router       /api/v1/game-systems [get]
 func (c *GameSystemController) list(ctx *gin.Context) {
-	items, err := 	c.service.GetAll(ctx.Request.Context())
+	items, err := c.service.GetAll(ctx.Request.Context())
 	if err != nil {
 		apierror.HandleError(ctx, err)
 		return
