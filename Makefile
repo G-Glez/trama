@@ -24,12 +24,15 @@ lint:
 	golangci-lint run ./...
 
 swagger:
+	@which swag >/dev/null 2>&1 || (echo "Installing swag..."; go install github.com/swaggo/swag/cmd/swag@latest)
 	swag init -g ./internal/api/router.go -o ./docs
 
 sqlc:
 	sqlc generate
 
-run-api:
+build-api: swagger
+
+run-api: swagger
 	docker compose up --build
 
 populate-db:
