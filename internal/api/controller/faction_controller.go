@@ -62,7 +62,7 @@ func (c *FactionController) list(ctx *gin.Context) {
 }
 
 // @Summary      Create faction
-// @Description  Create a new faction for an edition
+// @Description  Create a new faction
 // @Tags         factions
 // @Accept       json
 // @Produce      json

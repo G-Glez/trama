@@ -7,25 +7,28 @@ package coregen
 
 import (
 	"context"
+	"database/sql"
 	"time"
 )
 
 const createFaction = `-- name: CreateFaction :exec
-INSERT INTO factions (id, edition_id, name, created_at, updated_at) VALUES (?, ?, ?, ?, ?)
+INSERT INTO factions (id, edition_id, game_system_id, name, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)
 `
 
 type CreateFactionParams struct {
-	ID        string
-	EditionID string
-	Name      string
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID           string
+	EditionID    string
+	GameSystemID string
+	Name         string
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
 }
 
 func (q *Queries) CreateFaction(ctx context.Context, arg CreateFactionParams) error {
 	_, err := q.db.ExecContext(ctx, createFaction,
 		arg.ID,
 		arg.EditionID,
+		arg.GameSystemID,
 		arg.Name,
 		arg.CreatedAt,
 		arg.UpdatedAt,
@@ -43,7 +46,7 @@ func (q *Queries) DeleteFaction(ctx context.Context, id string) error {
 }
 
 const getFaction = `-- name: GetFaction :one
-SELECT id, edition_id, name, created_at, updated_at FROM factions WHERE id = ?
+SELECT id, edition_id, game_system_id, name, created_at, updated_at FROM factions WHERE id = ?
 `
 
 func (q *Queries) GetFaction(ctx context.Context, id string) (Faction, error) {
@@ -52,6 +55,7 @@ func (q *Queries) GetFaction(ctx context.Context, id string) (Faction, error) {
 	err := row.Scan(
 		&i.ID,
 		&i.EditionID,
+		&i.GameSystemID,
 		&i.Name,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -60,7 +64,7 @@ func (q *Queries) GetFaction(ctx context.Context, id string) (Faction, error) {
 }
 
 const listFactionsByEdition = `-- name: ListFactionsByEdition :many
-SELECT id, edition_id, name, created_at, updated_at FROM factions WHERE edition_id = ? ORDER BY name
+SELECT id, edition_id, game_system_id, name, created_at, updated_at FROM factions WHERE edition_id = ? ORDER BY name
 `
 
 func (q *Queries) ListFactionsByEdition(ctx context.Context, editionID string) ([]Faction, error) {
@@ -75,6 +79,7 @@ func (q *Queries) ListFactionsByEdition(ctx context.Context, editionID string) (
 		if err := rows.Scan(
 			&i.ID,
 			&i.EditionID,
+			&i.GameSystemID,
 			&i.Name,
 			&i.CreatedAt,
 			&i.UpdatedAt,
@@ -92,23 +97,24 @@ func (q *Queries) ListFactionsByEdition(ctx context.Context, editionID string) (
 	return items, nil
 }
 
-const updateFaction = `-- name: UpdateFaction :exec
-UPDATE factions SET edition_id = ?, name = ?, updated_at = ? WHERE id = ?
+const updateFaction = `-- name: UpdateFaction :execresult
+UPDATE factions SET edition_id = ?, game_system_id = ?, name = ?, updated_at = ? WHERE id = ?
 `
 
 type UpdateFactionParams struct {
-	EditionID string
-	Name      string
-	UpdatedAt time.Time
-	ID        string
+	EditionID    string
+	GameSystemID string
+	Name         string
+	UpdatedAt    time.Time
+	ID           string
 }
 
-func (q *Queries) UpdateFaction(ctx context.Context, arg UpdateFactionParams) error {
-	_, err := q.db.ExecContext(ctx, updateFaction,
+func (q *Queries) UpdateFaction(ctx context.Context, arg UpdateFactionParams) (sql.Result, error) {
+	return q.db.ExecContext(ctx, updateFaction,
 		arg.EditionID,
+		arg.GameSystemID,
 		arg.Name,
 		arg.UpdatedAt,
 		arg.ID,
 	)
-	return err
 }

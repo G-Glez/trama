@@ -8,26 +8,11 @@ import (
 	"time"
 )
 
-type Edition struct {
+type Faction struct {
 	ID           string
+	EditionID    string
 	GameSystemID string
 	Name         string
-	Version      string
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
-}
-
-type Faction struct {
-	ID        string
-	EditionID string
-	Name      string
-	CreatedAt time.Time
-	UpdatedAt time.Time
-}
-
-type GameSystem struct {
-	ID        string
-	Name      string
-	CreatedAt time.Time
-	UpdatedAt time.Time
 }

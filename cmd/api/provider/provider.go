@@ -26,14 +26,8 @@ type Provider struct {
 	env     envConfig
 	db      *sql.DB
 	queries *coregen.Queries
-	gsRepo  *core.GameSystemSQLRepository
-	edRepo  *core.EditionSQLRepository
 	facRepo *core.FactionSQLRepository
-	gsSvc   *core.GameSystemService
-	edSvc   *core.EditionService
 	facSvc  *core.FactionService
-	gsCtrl  *controller.GameSystemController
-	edCtrl  *controller.EditionController
 	facCtrl *controller.FactionController
 	gin     *gin.Engine
 	router  *api.Router
@@ -103,22 +97,18 @@ func (p *Provider) provisionQueries() {
 }
 
 func (p *Provider) provisionRepos() {
-	if p.gsRepo != nil {
+	if p.facRepo != nil {
 		return
 	}
 
-	p.gsRepo = core.NewGameSystemRepository(p.queries)
-	p.edRepo = core.NewEditionRepository(p.queries)
 	p.facRepo = core.NewFactionRepository(p.queries)
 }
 
 func (p *Provider) provisionServices() {
-	if p.gsSvc != nil {
+	if p.facSvc != nil {
 		return
 	}
 
-	p.gsSvc = core.NewGameSystemService(p.gsRepo)
-	p.edSvc = core.NewEditionService(p.edRepo)
 	p.facSvc = core.NewFactionService(p.facRepo)
 }
 
@@ -132,12 +122,10 @@ func (p *Provider) provisionGin() {
 }
 
 func (p *Provider) provisionControllers() {
-	if p.gsCtrl != nil {
+	if p.facCtrl != nil {
 		return
 	}
 
-	p.gsCtrl = controller.NewGameSystemController(p.gsSvc)
-	p.edCtrl = controller.NewEditionController(p.edSvc)
 	p.facCtrl = controller.NewFactionController(p.facSvc)
 }
 
@@ -147,8 +135,6 @@ func (p *Provider) provisionRouter() {
 	}
 
 	r := api.NewRouter(p.gin, p.Config())
-	r.WithController(p.gsCtrl)
-	r.WithController(p.edCtrl)
 	r.WithController(p.facCtrl)
 	r.Setup()
 

@@ -27,8 +27,9 @@ func NewFactionService(repo factionRepository) *FactionService {
 
 func (s *FactionService) Create(ctx context.Context, in CreateFactionInput) (FactionOutput, error) {
 	f := Faction{
-		EditionID: EditionID{in.EditionID},
-		Name:      in.Name,
+		EditionID:    EditionID{in.EditionID},
+		GameSystemID: GameSystemID{in.GameSystemID},
+		Name:         in.Name,
 	}
 
 	created, err := s.repo.Create(ctx, f)
@@ -67,10 +68,11 @@ func (s *FactionService) GetAllByEdition(ctx context.Context, edID uuid.UUID) ([
 
 func (s *FactionService) Update(ctx context.Context, in UpdateFactionInput) error {
 	f := Faction{
-		ID:        FactionID{in.ID},
-		EditionID: EditionID{in.EditionID},
-		Name:      in.Name,
-		UpdatedAt: time.Now(),
+		ID:           FactionID{in.ID},
+		EditionID:    EditionID{in.EditionID},
+		GameSystemID: GameSystemID{in.GameSystemID},
+		Name:         in.Name,
+		UpdatedAt:    time.Now(),
 	}
 
 	return s.repo.Update(ctx, f)
@@ -82,10 +84,11 @@ func (s *FactionService) Delete(ctx context.Context, id uuid.UUID) error {
 
 func toFactionOutput(f Faction) FactionOutput {
 	return FactionOutput{
-		ID:        f.ID.UUID,
-		EditionID: f.EditionID.UUID,
-		Name:      f.Name,
-		CreatedAt: f.CreatedAt,
-		UpdatedAt: f.UpdatedAt,
+		ID:           f.ID.UUID,
+		EditionID:    f.EditionID.UUID,
+		GameSystemID: f.GameSystemID.UUID,
+		Name:         f.Name,
+		CreatedAt:    f.CreatedAt,
+		UpdatedAt:    f.UpdatedAt,
 	}
 }

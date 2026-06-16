@@ -16,7 +16,7 @@ type factionQuerier interface {
 	CreateFaction(ctx context.Context, arg coregen.CreateFactionParams) error
 	GetFaction(ctx context.Context, id string) (coregen.Faction, error)
 	ListFactionsByEdition(ctx context.Context, editionID string) ([]coregen.Faction, error)
-	UpdateFaction(ctx context.Context, arg coregen.UpdateFactionParams) error
+	UpdateFaction(ctx context.Context, arg coregen.UpdateFactionParams) (sql.Result, error)
 	DeleteFaction(ctx context.Context, id string) error
 }
 
@@ -35,11 +35,12 @@ func (r *FactionSQLRepository) Create(ctx context.Context, f Faction) (Faction, 
 	f.UpdatedAt = now
 
 	err := r.querier.CreateFaction(ctx, coregen.CreateFactionParams{
-		ID:        f.ID.String(),
-		EditionID: f.EditionID.String(),
-		Name:      f.Name,
-		CreatedAt: f.CreatedAt,
-		UpdatedAt: f.UpdatedAt,
+		ID:           f.ID.String(),
+		EditionID:    f.EditionID.String(),
+		GameSystemID: f.GameSystemID.String(),
+		Name:         f.Name,
+		CreatedAt:    f.CreatedAt,
+		UpdatedAt:    f.UpdatedAt,
 	})
 	if err != nil {
 		return Faction{}, fmt.Errorf("%w: %w", ErrDB, err)
@@ -77,14 +78,19 @@ func (r *FactionSQLRepository) GetAllByEdition(ctx context.Context, edID Edition
 }
 
 func (r *FactionSQLRepository) Update(ctx context.Context, f Faction) error {
-	err := r.querier.UpdateFaction(ctx, coregen.UpdateFactionParams{
-		EditionID: f.EditionID.String(),
-		Name:      f.Name,
-		UpdatedAt: f.UpdatedAt,
-		ID:        f.ID.String(),
+	res, err := r.querier.UpdateFaction(ctx, coregen.UpdateFactionParams{
+		EditionID:    f.EditionID.String(),
+		GameSystemID: f.GameSystemID.String(),
+		Name:         f.Name,
+		UpdatedAt:    f.UpdatedAt,
+		ID:           f.ID.String(),
 	})
 	if err != nil {
 		return fmt.Errorf("%w: %w", ErrDB, err)
+	}
+	n, _ := res.RowsAffected()
+	if n == 0 {
+		return ErrNotFound
 	}
 	return nil
 }
@@ -108,11 +114,17 @@ func toDomainFaction(f coregen.Faction) (Faction, error) {
 		return Faction{}, fmt.Errorf("%w: invalid uuid: %w", ErrDataCorruption, err)
 	}
 
+	gsUID, err := uuid.Parse(f.GameSystemID)
+	if err != nil {
+		return Faction{}, fmt.Errorf("%w: invalid uuid: %w", ErrDataCorruption, err)
+	}
+
 	return Faction{
-		ID:        FactionID{uid},
-		EditionID: EditionID{edUID},
-		Name:      f.Name,
-		CreatedAt: f.CreatedAt,
-		UpdatedAt: f.UpdatedAt,
+		ID:           FactionID{uid},
+		EditionID:    EditionID{edUID},
+		GameSystemID: GameSystemID{gsUID},
+		Name:         f.Name,
+		CreatedAt:    f.CreatedAt,
+		UpdatedAt:    f.UpdatedAt,
 	}, nil
 }

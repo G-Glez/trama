@@ -5,40 +5,13 @@ definitions:
       error:
         type: string
     type: object
-  core.CreateEditionInput:
-    properties:
-      game_system_id:
-        type: string
-      name:
-        type: string
-      version:
-        type: string
-    type: object
   core.CreateFactionInput:
     properties:
       edition_id:
         type: string
-      name:
-        type: string
-    type: object
-  core.CreateGameSystemInput:
-    properties:
-      name:
-        type: string
-    type: object
-  core.EditionOutput:
-    properties:
-      created_at:
-        type: string
       game_system_id:
         type: string
-      id:
-        type: string
       name:
-        type: string
-      updated_at:
-        type: string
-      version:
         type: string
     type: object
   core.FactionOutput:
@@ -47,42 +20,21 @@ definitions:
         type: string
       edition_id:
         type: string
-      id:
-        type: string
-      name:
-        type: string
-      updated_at:
-        type: string
-    type: object
-  core.GameSystemOutput:
-    properties:
-      created_at:
-        type: string
-      id:
-        type: string
-      name:
-        type: string
-      updated_at:
-        type: string
-    type: object
-  core.UpdateEditionInput:
-    properties:
       game_system_id:
         type: string
+      id:
+        type: string
       name:
         type: string
-      version:
+      updated_at:
         type: string
     type: object
   core.UpdateFactionInput:
     properties:
       edition_id:
         type: string
-      name:
+      game_system_id:
         type: string
-    type: object
-  core.UpdateGameSystemInput:
-    properties:
       name:
         type: string
     type: object
@@ -93,147 +45,6 @@ info:
   title: TRAMA API
   version: "1.0"
 paths:
-  /api/v1/editions:
-    get:
-      description: Get all editions for a game system
-      parameters:
-      - description: Game system ID
-        in: query
-        name: game_system_id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/core.EditionOutput'
-            type: array
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/apierror.Error'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/apierror.Error'
-      summary: List editions
-      tags:
-      - editions
-    post:
-      consumes:
-      - application/json
-      description: Create a new edition for a game system
-      parameters:
-      - description: Edition data
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/core.CreateEditionInput'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/core.EditionOutput'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/apierror.Error'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/apierror.Error'
-      summary: Create edition
-      tags:
-      - editions
-  /api/v1/editions/{id}:
-    delete:
-      description: Delete an edition by ID
-      parameters:
-      - description: Edition ID
-        in: path
-        name: id
-        required: true
-        type: string
-      responses:
-        "204":
-          description: No Content
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/apierror.Error'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/apierror.Error'
-      summary: Delete edition
-      tags:
-      - editions
-    get:
-      description: Get an edition by ID
-      parameters:
-      - description: Edition ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/core.EditionOutput'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/apierror.Error'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/apierror.Error'
-      summary: Get edition
-      tags:
-      - editions
-    put:
-      consumes:
-      - application/json
-      description: Update an edition by ID
-      parameters:
-      - description: Edition ID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Edition data
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/core.UpdateEditionInput'
-      responses:
-        "204":
-          description: No Content
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/apierror.Error'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/apierror.Error'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/apierror.Error'
-      summary: Update edition
-      tags:
-      - editions
   /api/v1/factions:
     get:
       description: Get all factions for an edition
@@ -266,7 +77,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: Create a new faction for an edition
+      description: Create a new faction
       parameters:
       - description: Faction data
         in: body
@@ -375,137 +186,6 @@ paths:
       summary: Update faction
       tags:
       - factions
-  /api/v1/game-systems:
-    get:
-      description: Get all game systems
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/core.GameSystemOutput'
-            type: array
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/apierror.Error'
-      summary: List game systems
-      tags:
-      - game-systems
-    post:
-      consumes:
-      - application/json
-      description: Create a new game system
-      parameters:
-      - description: Game system data
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/core.CreateGameSystemInput'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/core.GameSystemOutput'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/apierror.Error'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/apierror.Error'
-      summary: Create game system
-      tags:
-      - game-systems
-  /api/v1/game-systems/{id}:
-    delete:
-      description: Delete a game system by ID
-      parameters:
-      - description: Game system ID
-        in: path
-        name: id
-        required: true
-        type: string
-      responses:
-        "204":
-          description: No Content
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/apierror.Error'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/apierror.Error'
-      summary: Delete game system
-      tags:
-      - game-systems
-    get:
-      description: Get a game system by ID
-      parameters:
-      - description: Game system ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/core.GameSystemOutput'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/apierror.Error'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/apierror.Error'
-      summary: Get game system
-      tags:
-      - game-systems
-    put:
-      consumes:
-      - application/json
-      description: Update a game system by ID
-      parameters:
-      - description: Game system ID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Game system data
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/core.UpdateGameSystemInput'
-      responses:
-        "204":
-          description: No Content
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/apierror.Error'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/apierror.Error'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/apierror.Error'
-      summary: Update game system
-      tags:
-      - game-systems
   /ping:
     get:
       description: Returns pong
