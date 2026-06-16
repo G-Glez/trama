@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	p     = provider.NewProvisionedProvider()
+	p = provider.NewProvisionedProvider()
 )
 
 func main() {

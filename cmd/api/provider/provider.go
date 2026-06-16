@@ -7,6 +7,7 @@ import (
 	"github.com/caarlos0/env/v11"
 	"github.com/gin-gonic/gin"
 
+	_ "trama/docs"
 	"trama/internal/api"
 	"trama/internal/api/config"
 	"trama/internal/api/controller"

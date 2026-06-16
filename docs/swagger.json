@@ -9,19 +9,625 @@
     "host": "localhost:8080",
     "basePath": "/",
     "paths": {
-        "/hola": {
+        "/api/v1/editions": {
             "get": {
-                "description": "Returns a greeting and stores an ID in SQLite",
+                "description": "Get all editions for a game system",
                 "produces": [
                     "application/json"
                 ],
-                "summary": "Say hello",
+                "tags": [
+                    "editions"
+                ],
+                "summary": "List editions",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Game system ID",
+                        "name": "game_system_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/core.EditionOutput"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apierror.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apierror.Error"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new edition for a game system",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "editions"
+                ],
+                "summary": "Create edition",
+                "parameters": [
+                    {
+                        "description": "Edition data",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/core.CreateEditionInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/core.EditionOutput"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apierror.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apierror.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/editions/{id}": {
+            "get": {
+                "description": "Get an edition by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "editions"
+                ],
+                "summary": "Get edition",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Edition ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/core.EditionOutput"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/apierror.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apierror.Error"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update an edition by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "editions"
+                ],
+                "summary": "Update edition",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Edition ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Edition data",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/core.UpdateEditionInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apierror.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/apierror.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apierror.Error"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete an edition by ID",
+                "tags": [
+                    "editions"
+                ],
+                "summary": "Delete edition",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Edition ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/apierror.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apierror.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/factions": {
+            "get": {
+                "description": "Get all factions for an edition",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "factions"
+                ],
+                "summary": "List factions",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Edition ID",
+                        "name": "edition_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/core.FactionOutput"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apierror.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apierror.Error"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new faction for an edition",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "factions"
+                ],
+                "summary": "Create faction",
+                "parameters": [
+                    {
+                        "description": "Faction data",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/core.CreateFactionInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/core.FactionOutput"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apierror.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apierror.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/factions/{id}": {
+            "get": {
+                "description": "Get a faction by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "factions"
+                ],
+                "summary": "Get faction",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Faction ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/core.FactionOutput"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/apierror.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apierror.Error"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update a faction by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "factions"
+                ],
+                "summary": "Update faction",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Faction ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Faction data",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/core.UpdateFactionInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apierror.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/apierror.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apierror.Error"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete a faction by ID",
+                "tags": [
+                    "factions"
+                ],
+                "summary": "Delete faction",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Faction ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/apierror.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apierror.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/game-systems": {
+            "get": {
+                "description": "Get all game systems",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "game-systems"
+                ],
+                "summary": "List game systems",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/core.GameSystemOutput"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apierror.Error"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new game system",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "game-systems"
+                ],
+                "summary": "Create game system",
+                "parameters": [
+                    {
+                        "description": "Game system data",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/core.CreateGameSystemInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/core.GameSystemOutput"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apierror.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apierror.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/game-systems/{id}": {
+            "get": {
+                "description": "Get a game system by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "game-systems"
+                ],
+                "summary": "Get game system",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Game system ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/core.GameSystemOutput"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/apierror.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apierror.Error"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update a game system by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "game-systems"
+                ],
+                "summary": "Update game system",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Game system ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Game system data",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/core.UpdateGameSystemInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apierror.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/apierror.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apierror.Error"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete a game system by ID",
+                "tags": [
+                    "game-systems"
+                ],
+                "summary": "Delete game system",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Game system ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/apierror.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apierror.Error"
                         }
                     }
                 }
@@ -44,6 +650,142 @@
                             }
                         }
                     }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "apierror.Error": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                }
+            }
+        },
+        "core.CreateEditionInput": {
+            "type": "object",
+            "properties": {
+                "game_system_id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "string"
+                }
+            }
+        },
+        "core.CreateFactionInput": {
+            "type": "object",
+            "properties": {
+                "edition_id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "core.CreateGameSystemInput": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "core.EditionOutput": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "game_system_id": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "string"
+                }
+            }
+        },
+        "core.FactionOutput": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "edition_id": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "core.GameSystemOutput": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "core.UpdateEditionInput": {
+            "type": "object",
+            "properties": {
+                "game_system_id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "string"
+                }
+            }
+        },
+        "core.UpdateFactionInput": {
+            "type": "object",
+            "properties": {
+                "edition_id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "core.UpdateGameSystemInput": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
                 }
             }
         }
