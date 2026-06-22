@@ -11,8 +11,12 @@ import (
 	"trama/internal/api"
 	"trama/internal/api/config"
 	"trama/internal/api/controller"
-	"trama/internal/core"
+	"trama/internal/battlelog"
+	battleloggen "trama/internal/gen/battlelog"
 	coregen "trama/internal/gen/core"
+	usergen "trama/internal/gen/user"
+	"trama/internal/core"
+	"trama/internal/user"
 	"trama/pkg/dbcon"
 )
 
@@ -25,10 +29,24 @@ type envConfig struct {
 type Provider struct {
 	env     envConfig
 	db      *sql.DB
-	queries *coregen.Queries
+	qCore   *coregen.Queries
+	qUser   *usergen.Queries
+	qBattle *battleloggen.Queries
 	facRepo *core.FactionSQLRepository
+	userRepo *user.UserSQLRepository
+	matchRepo *battlelog.MatchSQLRepository
+	teamRepo *battlelog.TeamSQLRepository
+	tournRepo *battlelog.TournamentSQLRepository
 	facSvc  *core.FactionService
+	userSvc *user.UserService
+	matchSvc *battlelog.MatchService
+	teamSvc *battlelog.TeamService
+	tournSvc *battlelog.TournamentService
 	facCtrl *controller.FactionController
+	userCtrl *controller.UserController
+	matchCtrl *controller.MatchController
+	teamCtrl *controller.TeamController
+	tournCtrl *controller.TournamentController
 	gin     *gin.Engine
 	router  *api.Router
 }
@@ -89,11 +107,13 @@ func (p *Provider) provisionDB() {
 }
 
 func (p *Provider) provisionQueries() {
-	if p.queries != nil {
+	if p.qCore != nil {
 		return
 	}
 
-	p.queries = coregen.New(p.db)
+	p.qCore = coregen.New(p.db)
+	p.qUser = usergen.New(p.db)
+	p.qBattle = battleloggen.New(p.db)
 }
 
 func (p *Provider) provisionRepos() {
@@ -101,7 +121,11 @@ func (p *Provider) provisionRepos() {
 		return
 	}
 
-	p.facRepo = core.NewFactionRepository(p.queries)
+	p.facRepo = core.NewFactionRepository(p.qCore)
+	p.userRepo = user.NewUserRepository(p.qUser)
+	p.matchRepo = battlelog.NewMatchRepository(p.qBattle)
+	p.teamRepo = battlelog.NewTeamRepository(p.qBattle)
+	p.tournRepo = battlelog.NewTournamentRepository(p.qBattle)
 }
 
 func (p *Provider) provisionServices() {
@@ -110,6 +134,10 @@ func (p *Provider) provisionServices() {
 	}
 
 	p.facSvc = core.NewFactionService(p.facRepo)
+	p.userSvc = user.NewUserService(p.userRepo)
+	p.matchSvc = battlelog.NewMatchService(p.matchRepo)
+	p.teamSvc = battlelog.NewTeamService(p.teamRepo)
+	p.tournSvc = battlelog.NewTournamentService(p.tournRepo)
 }
 
 func (p *Provider) provisionGin() {
@@ -127,6 +155,10 @@ func (p *Provider) provisionControllers() {
 	}
 
 	p.facCtrl = controller.NewFactionController(p.facSvc)
+	p.userCtrl = controller.NewUserController(p.userSvc)
+	p.matchCtrl = controller.NewMatchController(p.matchSvc)
+	p.teamCtrl = controller.NewTeamController(p.teamSvc)
+	p.tournCtrl = controller.NewTournamentController(p.tournSvc)
 }
 
 func (p *Provider) provisionRouter() {
@@ -136,6 +168,10 @@ func (p *Provider) provisionRouter() {
 
 	r := api.NewRouter(p.gin, p.Config())
 	r.WithController(p.facCtrl)
+	r.WithController(p.userCtrl)
+	r.WithController(p.matchCtrl)
+	r.WithController(p.teamCtrl)
+	r.WithController(p.tournCtrl)
 	r.Setup()
 
 	p.router = r

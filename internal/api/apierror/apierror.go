@@ -7,7 +7,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"trama/internal/battlelog"
 	"trama/internal/core"
+	"trama/internal/user"
 )
 
 type Error struct {
@@ -41,6 +43,19 @@ func HandleError(ctx *gin.Context, err error) {
 	switch {
 	case errors.Is(err, core.ErrNotFound):
 		ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+	case errors.Is(err, user.ErrUserNotFound),
+		errors.Is(err, battlelog.ErrMatchNotFound),
+		errors.Is(err, battlelog.ErrTeamNotFound),
+		errors.Is(err, battlelog.ErrTournamentNotFound):
+		ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+	case errors.Is(err, user.ErrEmailTaken):
+		ctx.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+	case errors.Is(err, user.ErrInvalidPassword):
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+	case errors.Is(err, user.ErrInvalidEmail),
+		errors.Is(err, battlelog.ErrInvalidPoints),
+		errors.Is(err, battlelog.ErrInvalidWinner):
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	case errors.Is(err, core.ErrDB):
 		slog.Error("database error", "error", err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "database error"})

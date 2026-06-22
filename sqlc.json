@@ -11,6 +11,28 @@
           "out": "internal/gen/core"
         }
       }
+    },
+    {
+      "engine": "sqlite",
+      "schema": "sql/user/schema.sql",
+      "queries": "sql/user/queries",
+      "gen": {
+        "go": {
+          "package": "usergen",
+          "out": "internal/gen/user"
+        }
+      }
+    },
+    {
+      "engine": "sqlite",
+      "schema": "sql/battlelog/schema.sql",
+      "queries": "sql/battlelog/queries",
+      "gen": {
+        "go": {
+          "package": "battleloggen",
+          "out": "internal/gen/battlelog"
+        }
+      }
     }
   ]
 }
