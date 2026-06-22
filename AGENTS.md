@@ -62,3 +62,11 @@ Via environment variables (see `.local.env`):
 
 **Do not** stage, commit, amend, push, merge, rebase, or create branches/PRs unless the user explicitly grants permission to do so.
 
+## Branching Strategy
+
+- **`main`** — production branch. Protected: requires PR with 1 approval, no direct pushes, no force push, linear history enforced.
+- **`dev`** — development/integration branch.
+- **`feat/*`** — feature branches. Create from `dev`, PR into `dev` when ready.
+
+Workflow: `feat/lo-que-sea` → PR to `dev` → integration → PR to `main` → production.
+
