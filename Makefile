@@ -53,14 +53,14 @@ swagger:                        ## Regenerate Swagger/OpenAPI docs
 
 TF_IMAGE   := hashicorp/terraform:1.15.6
 TF_VOLUMES := -v $(PWD):/workspace -v $(HOME)/.aws:/root/.aws:ro
-TF_ENV     := -e AWS_PROFILE=$(AWS_PROFILE)
+TF_ENV     := -e AWS_PROFILE -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e AWS_SESSION_TOKEN
 TF_RUN     := docker run --rm -it $(TF_VOLUMES) $(TF_ENV)
 
 tf-init-dev:                    ## Init S3 backend for dev
-	$(TF_RUN) -w /workspace/infra $(TF_IMAGE) init -backend-config="key=trama/dev/terraform.tfstate"
+	$(TF_RUN) -w /workspace/infra $(TF_IMAGE) init -reconfigure -backend-config="key=trama/dev/terraform.tfstate"
 
 tf-init-prod:                   ## Init S3 backend for prod
-	$(TF_RUN) -w /workspace/infra $(TF_IMAGE) init -backend-config="key=trama/prod/terraform.tfstate"
+	$(TF_RUN) -w /workspace/infra $(TF_IMAGE) init -reconfigure -backend-config="key=trama/prod/terraform.tfstate"
 
 tf-plan-dev: build-lambda       ## Plan dev (via Docker)
 	$(TF_RUN) -w /workspace/infra $(TF_IMAGE) plan -var-file=envs/dev.tfvars
@@ -68,11 +68,17 @@ tf-plan-dev: build-lambda       ## Plan dev (via Docker)
 tf-plan-prod: build-lambda      ## Plan prod (via Docker)
 	$(TF_RUN) -w /workspace/infra $(TF_IMAGE) plan -var-file=envs/prod.tfvars
 
-tf-apply-dev: build-lambda      ## Apply dev (via Docker)
-	$(TF_RUN) -w /workspace/infra $(TF_IMAGE) apply -var-file=envs/dev.tfvars
+tf-apply-dev: build-lambda       ## Apply dev (via Docker)
+	$(TF_RUN) -w /workspace/infra $(TF_IMAGE) apply -auto-approve -var-file=envs/dev.tfvars
 
-tf-apply-prod: build-lambda     ## Apply prod (via Docker)
-	$(TF_RUN) -w /workspace/infra $(TF_IMAGE) apply -var-file=envs/prod.tfvars
+tf-apply-prod: build-lambda      ## Apply prod (via Docker)
+	$(TF_RUN) -w /workspace/infra $(TF_IMAGE) apply -auto-approve -var-file=envs/prod.tfvars
+
+tf-destroy-dev: build-lambda     ## Destroy dev (via Docker)
+	$(TF_RUN) -w /workspace/infra $(TF_IMAGE) destroy -auto-approve -var-file=envs/dev.tfvars
+
+tf-destroy-prod: build-lambda    ## Destroy prod (via Docker)
+	$(TF_RUN) -w /workspace/infra $(TF_IMAGE) destroy -auto-approve -var-file=envs/prod.tfvars
 
 ## ──────────────────────────────
 ## Cleanup

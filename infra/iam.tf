@@ -25,25 +25,25 @@ data "aws_iam_policy_document" "github_assume" {
     condition {
       test     = "StringLike"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = ["repo:${var.tags["Project"]}/*"]
+      values   = ["repo:${var.github_repo}"]
     }
   }
 }
 
 resource "aws_iam_role" "lambda" {
-  name               = "${upper(var.tags["Project"])}-LAMBDA-${upper(var.tags["Environment"])}"
+  name               = "trama-${var.tags["Environment"]}-role"
   assume_role_policy = data.aws_iam_policy_document.lambda_assume.json
   tags               = var.tags
 }
 
 resource "aws_iam_role" "github" {
-  name               = "${upper(var.tags["Project"])}-GITHUB-${upper(var.tags["Environment"])}"
+  name               = "trama-${var.tags["Environment"]}-github"
   assume_role_policy = data.aws_iam_policy_document.github_assume.json
   tags               = var.tags
 }
 
 resource "aws_iam_policy" "logs" {
-  name        = "${upper(var.tags["Project"])}-LOGS-${upper(var.tags["Environment"])}"
+  name        = "trama-${var.tags["Environment"]}-logs"
   description = "Allow Lambda to write CloudWatch logs"
 
   policy = jsonencode({

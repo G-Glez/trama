@@ -71,5 +71,5 @@ func (p *Provider) provisionGin() {
 
 	gin.SetMode(p.env.GinMode)
 	p.gin = gin.Default()
-	p.gin.GET("/ping", api.Ping)
+	p.gin.GET("/api/ping", api.Ping)
 }

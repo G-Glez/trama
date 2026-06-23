@@ -22,6 +22,11 @@ variable "dynamodb_billing_mode" {
   default     = "PAY_PER_REQUEST"
 }
 
+variable "github_repo" {
+  description = "GitHub repo pattern for OIDC auth (e.g. g-glez/*)"
+  type        = string
+}
+
 variable "tags" {
   description = "Tags to apply to all resources"
   type        = map(string)
