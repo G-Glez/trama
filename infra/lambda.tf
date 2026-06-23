@@ -5,7 +5,9 @@ data "archive_file" "trama" {
 }
 
 resource "aws_lambda_function" "trama" {
-  function_name    = "${upper(var.tags["Project"])}-LAMBDA-${upper(var.tags["Environment"])}"
+  depends_on = [aws_cloudwatch_log_group.trama]
+
+  function_name    = "trama-${var.tags["Environment"]}"
   role             = aws_iam_role.lambda.arn
   filename         = data.archive_file.trama.output_path
   source_code_hash = data.archive_file.trama.output_base64sha256
@@ -17,7 +19,9 @@ resource "aws_lambda_function" "trama" {
 
   environment {
     variables = {
-      ENVIRONMENT = var.tags["Environment"]
+      GIN_MODE      = "release"
+      DATABASE_PATH = "/tmp/trama.db"
+      ENVIRONMENT   = var.tags["Environment"]
     }
   }
 
@@ -25,7 +29,7 @@ resource "aws_lambda_function" "trama" {
 }
 
 resource "aws_cloudwatch_log_group" "trama" {
-  name              = "/aws/lambda/${upper(var.tags["Project"])}-LAMBDA-${upper(var.tags["Environment"])}"
+  name              = "/aws/lambda/trama-${var.tags["Environment"]}"
   retention_in_days = 30
   tags              = var.tags
 }

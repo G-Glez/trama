@@ -13,7 +13,6 @@ terraform {
 
   backend "s3" {
     bucket = "terraform-infra-211125667058"
-    key    = "trama/terraform.tfstate"
     region = "eu-west-1"
   }
 }

@@ -6,7 +6,7 @@ locals {
 }
 
 resource "aws_apigatewayv2_api" "trama" {
-  name          = "${upper(var.tags["Project"])}-GATEWAY-${upper(var.tags["Environment"])}"
+  name          = "trama-${var.tags["Environment"]}"
   protocol_type = "HTTP"
 
   cors_configuration {

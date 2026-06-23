@@ -15,7 +15,7 @@ import (
 // @Description  Returns pong
 // @Produce      json
 // @Success      200  {object}  map[string]string
-// @Router       /ping [get]
+// @Router       /api/ping [get]
 func Ping(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "pong"})
 }

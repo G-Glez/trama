@@ -1,0 +1,89 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Target environment
+        required: true
+        default: dev
+        type: choice
+        options:
+          - dev
+          - prod
+
+env:
+  AWS_REGION: eu-west-1
+  TF_VERSION: 1.11.4
+
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+
+jobs:
+  plan:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    environment: prod
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/trama-prod-github
+          aws-region: ${{ env.AWS_REGION }}
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+
+      - run: make build-lambda
+
+      - run: terraform init
+        working-directory: infra
+
+      - name: Terraform Plan
+        run: terraform plan -var-file=envs/prod.tfvars -no-color
+        working-directory: infra
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || 'prod' }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/trama-${{ github.event.inputs.environment || 'prod' }}-github
+          aws-region: ${{ env.AWS_REGION }}
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+
+      - run: make build-lambda
+
+      - run: terraform init
+        working-directory: infra
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve -var-file=envs/${{ github.event.inputs.environment || 'prod' }}.tfvars
+        working-directory: infra
