@@ -12,7 +12,7 @@ data "aws_iam_policy_document" "lambda_assume" {
 data "aws_iam_policy_document" "github_assume" {
   statement {
     effect  = "Allow"
-    actions = ["sts:AssumeRole"]
+    actions = ["sts:AssumeRoleWithWebIdentity"]
     principals {
       type        = "Federated"
       identifiers = [aws_iam_openid_connect_provider.github.arn]
