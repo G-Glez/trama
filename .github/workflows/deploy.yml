@@ -35,20 +35,15 @@ jobs:
 
       - name: Debug OIDC token
         run: |
-          curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
-            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=sts.amazonaws.com" \
-            | jq -r '.value' > /tmp/oidc_token.txt
-          python3 << 'PYEOF'
-import base64, json
-with open('/tmp/oidc_token.txt') as f:
-    token = f.read().strip()
-parts = token.split('.')
-pad = len(parts[1]) % 4
-if pad:
-    parts[1] += '=' * (4 - pad)
-decoded = json.loads(base64.urlsafe_b64decode(parts[1]))
-print(json.dumps(decoded, indent=2))
-PYEOF
+          python3 -c "
+import base64,json,urllib.request,os
+t=urllib.request.urlopen(os.environ['ACTIONS_ID_TOKEN_REQUEST_URL']+'&audience=sts.amazonaws.com',
+  headers={'Authorization':'bearer '+os.environ['ACTIONS_ID_TOKEN_REQUEST_TOKEN']}).read()
+j=json.loads(t)
+p=j['value'].split('.')[1]
+p+='='*(4-len(p)%4) if len(p)%4 else ''
+print(json.dumps(json.loads(base64.urlsafe_b64decode(p)),indent=2))
+"
 
       - name: Configure AWS credentials via OIDC
         uses: aws-actions/configure-aws-credentials@v6
