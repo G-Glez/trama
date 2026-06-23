@@ -1,4 +1,4 @@
-github_repo = "g-glez/*"
+github_repo = "G-Glez/*"
 
 lambda_timeout = 60
 

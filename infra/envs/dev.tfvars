@@ -1,4 +1,4 @@
-github_repo = "g-glez/*"
+github_repo = "G-Glez/*"
 
 tags = {
   Project     = "trama"
