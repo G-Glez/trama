@@ -68,10 +68,10 @@ tf-plan-dev: build-lambda       ## Plan dev (via Docker)
 tf-plan-prod: build-lambda      ## Plan prod (via Docker)
 	$(TF_RUN) -w /workspace/infra $(TF_IMAGE) plan -var-file=envs/prod.tfvars
 
-tf-apply-dev: build-lambda       ## Apply dev (via Docker)
+tf-apply-dev: build-lambda tf-init-dev       ## Apply dev (via Docker)
 	$(TF_RUN) -w /workspace/infra $(TF_IMAGE) apply -auto-approve -var-file=envs/dev.tfvars
 
-tf-apply-prod: build-lambda      ## Apply prod (via Docker)
+tf-apply-prod: build-lambda tf-init-prod      ## Apply prod (via Docker)
 	$(TF_RUN) -w /workspace/infra $(TF_IMAGE) apply -auto-approve -var-file=envs/prod.tfvars
 
 tf-destroy-dev: build-lambda     ## Destroy dev (via Docker)
