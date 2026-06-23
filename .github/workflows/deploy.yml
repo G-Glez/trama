@@ -1,0 +1,59 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Target environment
+        required: true
+        default: dev
+        type: choice
+        options:
+          - dev
+          - prod
+
+env:
+  AWS_REGION: eu-west-1
+  TF_VERSION: 1.11.4
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || 'prod' }}
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/trama-${{ github.event.inputs.environment || 'prod' }}-github
+          aws-region: ${{ env.AWS_REGION }}
+
+      - uses: actions/cache@v4
+        with:
+          path: infra/.terraform
+          key: tf-${{ hashFiles('infra/.terraform.lock.hcl') }}
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+
+      - run: make build-lambda
+
+      - run: terraform init
+        working-directory: infra
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve -var-file=envs/${{ github.event.inputs.environment || 'prod' }}.tfvars
+        working-directory: infra

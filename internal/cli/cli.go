@@ -19,10 +19,11 @@ func New(db *sql.DB) *CLI {
 func (c *CLI) Start() error {
 	rootCmd := &cobra.Command{
 		Use:   "trama-cli",
-		Short: "TRAMA CLI - database management tools",
+		Short: "TRAMA CLI",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return cmd.Help()
+		},
 	}
-
-	rootCmd.AddCommand(migrateCmd(c))
 
 	return rootCmd.Execute()
 }
