@@ -5,9 +5,9 @@ info:
   title: TRAMA API
   version: "1.0"
 paths:
-  /ping:
+  /api/ping:
     get:
-      description: Returns pong
+      description: Returns ok
       produces:
       - application/json
       responses:

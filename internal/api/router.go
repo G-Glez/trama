@@ -12,10 +12,10 @@ import (
 )
 
 // @Summary      Health check
-// @Description  Returns pong
+// @Description  Returns ok
 // @Produce      json
 // @Success      200  {object}  map[string]string
 // @Router       /api/ping [get]
 func Ping(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{"message": "pong"})
+	c.JSON(http.StatusOK, gin.H{"message": "ok"})
 }
