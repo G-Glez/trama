@@ -3,8 +3,6 @@ name: Deploy
 on:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
   workflow_dispatch:
     inputs:
       environment:
@@ -23,52 +21,9 @@ env:
 permissions:
   id-token: write
   contents: read
-  pull-requests: write
 
 jobs:
-  plan:
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v7
-
-      - name: Debug OIDC token
-        run: python3 -u .github/scripts/decode_oidc.py
-        env:
-          ACTIONS_ID_TOKEN_REQUEST_TOKEN: ${{ env.ACTIONS_ID_TOKEN_REQUEST_TOKEN }}
-          ACTIONS_ID_TOKEN_REQUEST_URL: ${{ env.ACTIONS_ID_TOKEN_REQUEST_URL }}
-
-      - name: Configure AWS credentials via OIDC
-        uses: aws-actions/configure-aws-credentials@v6
-        with:
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/trama-dev-github
-          aws-region: ${{ env.AWS_REGION }}
-
-      - uses: actions/cache@v4
-        with:
-          path: infra/.terraform
-          key: tf-${{ hashFiles('infra/.terraform.lock.hcl') }}
-
-      - uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: ${{ env.TF_VERSION }}
-
-      - uses: actions/setup-go@v5
-        with:
-          go-version: stable
-
-      - run: make build-lambda
-
-      - run: terraform init
-        working-directory: infra
-
-      - name: Terraform Plan
-        run: terraform plan -var-file=envs/prod.tfvars -no-color
-        working-directory: infra
-
   deploy:
-    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     environment: ${{ github.event.inputs.environment || 'prod' }}
 
