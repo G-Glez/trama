@@ -4,3 +4,9 @@ data/*.db
 task.md
 plan/
 build/
+
+# Terraform
+infra/.terraform/
+infra/terraform.tfstate*
+infra/*.tfstate
+infra/*.tfstate.backup
