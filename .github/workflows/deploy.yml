@@ -53,7 +53,7 @@ jobs:
 
       - run: make build-lambda
 
-      - run: terraform init -input=false -backend-config="key=trama/${{ github.event.inputs.environment || 'prod' }}/terraform.tfstate"
+      - run: terraform init -input=false -reconfigure -backend-config="key=trama/${{ github.event.inputs.environment || 'prod' }}/terraform.tfstate"
         working-directory: infra
 
       - name: Terraform Apply
