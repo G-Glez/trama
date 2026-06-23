@@ -40,7 +40,6 @@ jobs:
         with:
           path: infra/.terraform
           key: tf-${{ hashFiles('infra/.terraform.lock.hcl') }}
-          restore-keys: tf-
 
       - uses: hashicorp/setup-terraform@v3
         with:
@@ -49,11 +48,10 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: stable
-          cache: true
 
       - run: make build-lambda
 
-      - run: terraform init -input=false -backend-config="key=trama/${{ github.event.inputs.environment || 'prod' }}/terraform.tfstate"
+      - run: terraform init
         working-directory: infra
 
       - name: Terraform Apply
