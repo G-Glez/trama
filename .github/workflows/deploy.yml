@@ -35,7 +35,7 @@ jobs:
       - name: Configure AWS credentials via OIDC
         uses: aws-actions/configure-aws-credentials@v6
         with:
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/trama-${{ github.event.inputs.environment || 'prod' }}-github
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/trama-github-${{ github.event.inputs.environment || 'prod' }}
           aws-region: ${{ env.AWS_REGION }}
 
       - uses: actions/cache@v4
