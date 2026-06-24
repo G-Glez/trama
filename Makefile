@@ -1,5 +1,4 @@
 .PHONY: build-cli build-lambda test lint swagger clean               \
-        tf-init tf-docker tf-docker-cmd                              \
         tf-plan-dev tf-plan-prod tf-apply-dev tf-apply-prod
 
 ## Project
@@ -51,34 +50,66 @@ swagger:                        ## Regenerate Swagger/OpenAPI docs
 ## AWS / Terraform
 ## ──────────────────────────────
 
-TF_IMAGE   := hashicorp/terraform:1.15.6
-TF_VOLUMES := -v $(PWD):/workspace -v $(HOME)/.aws:/root/.aws:ro
-TF_ENV     := -e AWS_PROFILE -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e AWS_SESSION_TOKEN
-TF_RUN     := docker run --rm -it $(TF_VOLUMES) $(TF_ENV)
+TF_IMAGE    := hashicorp/terraform:1.15.6
+TF_TMPDIR   := /tmp/opencode/trama-infra
+TF_CACHEDIR := /tmp/opencode/trama-tf-cache
+TF_ENV      := -e AWS_PROFILE -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e AWS_SESSION_TOKEN
+TF_DOCKER   := docker run --rm --entrypoint sh \
+                -v $(TF_TMPDIR)/infra:/workspace/infra \
+                -v $(TF_TMPDIR)/build:/workspace/build \
+                -v $(HOME)/.aws:/root/.aws:ro \
+                -v $(TF_CACHEDIR):/workspace/infra/.terraform \
+                $(TF_ENV) -w /workspace/infra $(TF_IMAGE)
 
-tf-init-dev:                    ## Init S3 backend for dev
-	$(TF_RUN) -w /workspace/infra $(TF_IMAGE) init -reconfigure -backend-config="key=trama/dev/terraform.tfstate"
+define TF_INIT
+terraform init -reconfigure -backend-config="key=trama/$(1)/terraform.tfstate"
+endef
 
-tf-init-prod:                   ## Init S3 backend for prod
-	$(TF_RUN) -w /workspace/infra $(TF_IMAGE) init -reconfigure -backend-config="key=trama/prod/terraform.tfstate"
+define TF_IMPORT_DEV
+terraform import -var-file=envs/dev.tfvars aws_dynamodb_table.users trama-users-dev || true && \
+terraform import -var-file=envs/dev.tfvars aws_iam_role.lambda trama-lambda-dev || true && \
+terraform import -var-file=envs/dev.tfvars aws_iam_role.github trama-github-dev || true && \
+terraform import -var-file=envs/dev.tfvars aws_iam_policy.logs arn:aws:iam::211125667058:policy/trama-logs-dev || true && \
+terraform import -var-file=envs/dev.tfvars aws_iam_policy.dynamodb arn:aws:iam::211125667058:policy/trama-dynamodb-dev || true && \
+terraform import -var-file=envs/dev.tfvars aws_cloudwatch_log_group.trama /aws/lambda/trama-api-dev || true
+endef
+
+define TF_PREPARE
+rm -rf $(TF_TMPDIR) && \
+mkdir -p $(TF_TMPDIR)/infra $(TF_TMPDIR)/build/lambda && \
+cp -r infra/* $(TF_TMPDIR)/infra/ && \
+cp build/lambda/bootstrap $(TF_TMPDIR)/build/lambda/
+endef
 
 tf-plan-dev: build-lambda       ## Plan dev (via Docker)
-	$(TF_RUN) -w /workspace/infra $(TF_IMAGE) plan -var-file=envs/dev.tfvars
+	$(TF_PREPARE) && \
+	$(TF_DOCKER) -c '$(call TF_INIT,dev) && terraform plan -var-file=envs/dev.tfvars' && \
+	rm -rf $(TF_TMPDIR)
 
 tf-plan-prod: build-lambda      ## Plan prod (via Docker)
-	$(TF_RUN) -w /workspace/infra $(TF_IMAGE) plan -var-file=envs/prod.tfvars
+	$(TF_PREPARE) && \
+	$(TF_DOCKER) -c '$(call TF_INIT,prod) && terraform plan -var-file=envs/prod.tfvars' && \
+	rm -rf $(TF_TMPDIR)
 
-tf-apply-dev: build-lambda tf-init-dev       ## Apply dev (via Docker)
-	$(TF_RUN) -w /workspace/infra $(TF_IMAGE) apply -auto-approve -var-file=envs/dev.tfvars
+tf-apply-dev: build-lambda       ## Apply dev (via Docker)
+	$(TF_PREPARE) && \
+	$(TF_DOCKER) -c '$(call TF_INIT,dev) && ($(TF_IMPORT_DEV)) && terraform apply -auto-approve -var-file=envs/dev.tfvars' && \
+	rm -rf $(TF_TMPDIR)
 
-tf-apply-prod: build-lambda tf-init-prod      ## Apply prod (via Docker)
-	$(TF_RUN) -w /workspace/infra $(TF_IMAGE) apply -auto-approve -var-file=envs/prod.tfvars
+tf-apply-prod: build-lambda      ## Apply prod (via Docker)
+	$(TF_PREPARE) && \
+	$(TF_DOCKER) -c '$(call TF_INIT,prod) && terraform apply -auto-approve -var-file=envs/prod.tfvars' && \
+	rm -rf $(TF_TMPDIR)
 
 tf-destroy-dev: build-lambda     ## Destroy dev (via Docker)
-	$(TF_RUN) -w /workspace/infra $(TF_IMAGE) destroy -auto-approve -var-file=envs/dev.tfvars
+	$(TF_PREPARE) && \
+	$(TF_DOCKER) -c '$(call TF_INIT,dev) && terraform destroy -auto-approve -var-file=envs/dev.tfvars' && \
+	rm -rf $(TF_TMPDIR)
 
 tf-destroy-prod: build-lambda    ## Destroy prod (via Docker)
-	$(TF_RUN) -w /workspace/infra $(TF_IMAGE) destroy -auto-approve -var-file=envs/prod.tfvars
+	$(TF_PREPARE) && \
+	$(TF_DOCKER) -c '$(call TF_INIT,prod) && terraform destroy -auto-approve -var-file=envs/prod.tfvars' && \
+	rm -rf $(TF_TMPDIR)
 
 ## ──────────────────────────────
 ## Cleanup
