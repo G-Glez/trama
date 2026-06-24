@@ -93,6 +93,7 @@ Steps:
 - **API**: HTTP API Gateway v2, routes: `ANY /api/{proxy+}`
 - **Lambda**: Go bootstrap binary with Gin adapter
 - **CORS**: dev = `*`, prod = `https://trama.app`
+- **Resource naming**: `{project}-{thing}-{environment}` — project and environment come from `var.tags["Project"]` and `var.tags["Environment"]`
 
 ## API Docs (OpenAPI / Swagger)
 
@@ -102,14 +103,30 @@ Steps:
 ## Conventions
 
 - **Language**: Go — standard formatting (`gofumpt`), idiomatic naming
-- **Architecture**: domain-driven, hexagonal-style — `internal/core/` for domain, `internal/api/` for delivery
+- **Architecture**: DDD-lite — `internal/domain/` for domain, `internal/presentation/` for entry points, `internal/infra/` for infrastructure
 - **Imports**: stdlib first, then third-party, then internal; group with blank lines
 - **Errors**: return early, wrap with `fmt.Errorf("context: %w", err)`
 - **Testing**: `*_test.go` next to implementation; use `httptest` for HTTP handler tests
-- **SQLite**: additive-only migrations in `internal/migrate/migrations/`, executed on Lambda cold start
 - **No commented-out code** — delete it
 - **No hardcoded secrets** — use env vars loaded via `caarlos0/env`
 - **Commits**: [Conventional Commits](https://www.conventionalcommits.org/) — `feat:` for features, `fix:` for bug fixes
+
+### Go Doc Comments
+
+Document all exported symbols with the following format:
+
+```go
+// -----------------------------------------------------------------------------------
+// Description of what this function/type does.
+// Output: returned value (only if there's a real return beyond error)
+// OnError: ErrOne, ErrTwo (only if the function returns specific sentinel errors)
+// -----------------------------------------------------------------------------------
+```
+
+Rules:
+- `Input:` omitted — args are visible in the function signature
+- `Output:` included only when there is a meaningful return value (not just error)
+- `OnError:` lists the specific sentinel errors the caller should handle
 
 ## Configuration
 

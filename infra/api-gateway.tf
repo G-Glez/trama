@@ -6,7 +6,7 @@ locals {
 }
 
 resource "aws_apigatewayv2_api" "trama" {
-  name          = "trama-${var.tags["Environment"]}"
+  name          = "${var.tags["Project"]}-api-${var.tags["Environment"]}"
   protocol_type = "HTTP"
 
   cors_configuration {
@@ -23,6 +23,11 @@ resource "aws_apigatewayv2_stage" "trama" {
   api_id      = aws_apigatewayv2_api.trama.id
   name        = "$default"
   auto_deploy = true
+
+  default_route_settings {
+    throttling_burst_limit = var.throttling_burst_limit
+    throttling_rate_limit  = var.throttling_rate_limit
+  }
 }
 
 resource "aws_apigatewayv2_integration" "trama" {

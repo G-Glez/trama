@@ -27,6 +27,23 @@ variable "github_repo" {
   type        = string
 }
 
+variable "jwt_secret" {
+  description = "Secret key for JWT signing"
+  type        = string
+}
+
+variable "throttling_burst_limit" {
+  description = "API Gateway burst limit (max requests in a burst)"
+  type        = number
+  default     = 100
+}
+
+variable "throttling_rate_limit" {
+  description = "API Gateway rate limit (requests per second)"
+  type        = number
+  default     = 50
+}
+
 variable "tags" {
   description = "Tags to apply to all resources"
   type        = map(string)
