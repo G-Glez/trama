@@ -9,13 +9,13 @@ import (
 )
 
 type ApiProvider struct {
-	jwt              *auth.JWT
-	gin              *gin.Engine
-	authService      *auth.Service
-	authController   *controller.AuthController
-	healthController *controller.HealthController
-	authMiddleware   gin.HandlerFunc
-	router           *api.Router
+	jwt                   *auth.JWT
+	gin                   *gin.Engine
+	authService           *auth.Service
+	authController        *controller.AuthController
+	healthController      *controller.HealthController
+	bearerTokenMiddleware gin.HandlerFunc
+	router                *api.Router
 }
 
 func (p *Provider) provisionApi() {
@@ -23,7 +23,7 @@ func (p *Provider) provisionApi() {
 	p.provisionAuthService()
 	p.provisionAuthController()
 	p.provisionHealthController()
-	p.provisionAuthMiddleware()
+	p.provisionBearerTokenMiddleware()
 	p.provisionRouter()
 	p.provisionGin()
 }
@@ -44,8 +44,8 @@ func (p *Provider) provisionHealthController() {
 	p.healthController = controller.NewHealthController()
 }
 
-func (p *Provider) provisionAuthMiddleware() {
-	p.authMiddleware = auth.AuthMiddleware(p.authService)
+func (p *Provider) provisionBearerTokenMiddleware() {
+	p.bearerTokenMiddleware = auth.BearerTokenMiddleware(p.authService)
 }
 
 func (p *Provider) provisionRouter() {

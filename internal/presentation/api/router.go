@@ -21,13 +21,13 @@ func NewRouter(controllers ...Controller) *Router {
 
 func (rt *Router) Setup(
 	r *gin.Engine,
-	authMiddleware gin.HandlerFunc,
+	bearerTokenMiddleware gin.HandlerFunc,
 ) {
 	api := r.Group("/api")
 
 	public := api.Group("")
 	protected := api.Group("")
-	protected.Use(authMiddleware)
+	protected.Use(bearerTokenMiddleware)
 
 	for _, c := range rt.controllers {
 		c.Register(public, protected)

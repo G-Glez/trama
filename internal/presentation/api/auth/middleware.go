@@ -10,11 +10,11 @@ import (
 )
 
 // -----------------------------------------------------------------------------------
-// AuthMiddleware returns a Gin handler that validates Bearer tokens and injects a
+// BearerTokenMiddleware returns a Gin handler that validates Bearer tokens and injects a
 // Principal into the request context. The middleware is intended to be applied to
 // protected route groups only — public endpoints should not pass through it.
 // -----------------------------------------------------------------------------------
-func AuthMiddleware(svc *Service) gin.HandlerFunc {
+func BearerTokenMiddleware(svc *Service) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		header := c.GetHeader("Authorization")
 		if header == "" {

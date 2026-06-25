@@ -36,11 +36,10 @@ func NewProvisionedProvider() *Provider {
 }
 
 func (p *Provider) Handler() *handler.Handler {
-	p.router.Setup(p.gin, p.authMiddleware)
+	p.router.Setup(p.gin, p.bearerTokenMiddleware)
 	adapter := ginadapter.NewV2(p.gin)
 	return handler.New(adapter)
 }
-
 
 func (p *Provider) provisionLogger() {
 	level := slog.LevelInfo
