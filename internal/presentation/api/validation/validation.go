@@ -9,7 +9,7 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-func GetMessage(err error) string {
+func GetMessageFromErr(err error) string {
 	var validationErrors validator.ValidationErrors
 	if !errors.As(err, &validationErrors) {
 		return err.Error()

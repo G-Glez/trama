@@ -15,7 +15,7 @@ type ErrorResponse struct {
 }
 
 func NewErrorResponse(err error) ErrorResponse {
-	return ErrorResponse{Message: validation.GetMessage(err)}
+	return ErrorResponse{Message: validation.GetMessageFromErr(err)}
 }
 
 func GlobalErrorHandler(err error) (int, ErrorResponse) {
