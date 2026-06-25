@@ -135,7 +135,7 @@ Via environment variables (see `.local.env`):
 | Variable | Default | Description |
 |---|---|---|
 | `PORT` | `8080` | Server listen port (local only) |
-| `GIN_MODE` | `debug` | Gin mode (`debug`/`release`/`test`) |
+| `ENV` | `dev` | Environment (`dev`/`prod`) — controls Gin mode and log level |
 | `DATABASE_PATH` | `./data/trama.db` | SQLite database file path |
 
 ## Branching Strategy

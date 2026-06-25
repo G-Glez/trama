@@ -56,6 +56,11 @@ func (p *Provider) provisionRouter() {
 }
 
 func (p *Provider) provisionGin() {
-	gin.SetMode(p.env.GinMode)
+	ginMode := "release"
+	if p.env.Env == "dev" {
+		ginMode = "debug"
+	}
+
+	gin.SetMode(ginMode)
 	p.gin = gin.Default()
 }

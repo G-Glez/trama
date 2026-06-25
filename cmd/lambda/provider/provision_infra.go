@@ -2,7 +2,7 @@ package provider
 
 import (
 	"context"
-	"log"
+	"log/slog"
 	"trama/internal/infra/awsddb"
 
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -22,7 +22,8 @@ func (p *Provider) provisionInfra() {
 func (p *Provider) provisionDynamoDB() {
 	cfg, err := config.LoadDefaultConfig(context.Background())
 	if err != nil {
-		log.Fatalf("Failed to load AWS config: %v", err)
+		slog.Error("Failed to load AWS config", "error", err)
+		panic(err)
 	}
 	p.dynamo = dynamodb.NewFromConfig(cfg)
 }

@@ -19,7 +19,7 @@ resource "aws_lambda_function" "trama" {
 
   environment {
     variables = {
-      GIN_MODE       = "release"
+      ENV            = "prod"
       DYNAMODB_USERS_TABLE_NAME = aws_dynamodb_table.users.name
       JWT_SECRET     = var.jwt_secret
       ENVIRONMENT    = var.tags["Environment"]

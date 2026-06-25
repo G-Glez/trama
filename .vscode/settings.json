@@ -4,6 +4,7 @@
         "apierror",
         "coregen",
         "dbcon",
+        "errorhandler",
         "trama"
     ]
 }

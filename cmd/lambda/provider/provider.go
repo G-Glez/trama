@@ -1,6 +1,8 @@
 package provider
 
 import (
+	"log/slog"
+	"os"
 	"trama/cmd/lambda/handler"
 
 	ginadapter "github.com/awslabs/aws-lambda-go-api-proxy/gin"
@@ -8,7 +10,7 @@ import (
 )
 
 type envConfig struct {
-	GinMode                string `env:"GIN_MODE,required"`
+	Env                    string `env:"ENV,required"`
 	JWTSecret              string `env:"JWT_SECRET,required"`
 	DynamoDBUsersTableName string `env:"DYNAMODB_USERS_TABLE_NAME,required"`
 }
@@ -26,6 +28,7 @@ func NewProvisionedProvider() *Provider {
 	}
 
 	p := &Provider{env: e}
+	p.provisionLogger()
 	p.provisionInfra()
 	p.provisionApi()
 
@@ -36,4 +39,16 @@ func (p *Provider) Handler() *handler.Handler {
 	p.router.Setup(p.gin, p.authMiddleware)
 	adapter := ginadapter.NewV2(p.gin)
 	return handler.New(adapter)
+}
+
+
+func (p *Provider) provisionLogger() {
+	level := slog.LevelInfo
+	if p.env.Env == "dev" {
+		level = slog.LevelDebug
+	}
+	handler := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+		Level: level,
+	})
+	slog.SetDefault(slog.New(handler))
 }

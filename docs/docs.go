@@ -17,14 +17,14 @@ const docTemplate = `{
     "paths": {
         "/api/ping": {
             "get": {
-                "description": "Returns ok",
-                "produces": [
-                    "application/json"
+                "description": "Returns ok if the service is reachable",
+                "tags": [
+                    "health"
                 ],
                 "summary": "Health check",
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "ok",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {

@@ -44,7 +44,7 @@ lint:                           ## Run linter
 
 swagger:                        ## Regenerate Swagger/OpenAPI docs
 	@which swag >/dev/null 2>&1 || (echo "Installing swag..."; go install github.com/swaggo/swag/cmd/swag@latest)
-	swag init -g ./internal/api/router.go -o ./docs
+	swag init -g ./internal/presentation/api/router.go -o ./docs
 
 ## ──────────────────────────────
 ## AWS / Terraform
